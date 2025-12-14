@@ -58,14 +58,20 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const setAutomaticThemeMode = async () => {
     // Set the theme mode to automatic
     const themeModeFromStorage = await getThemeModeFromStorage();
+    let newThemeMode: ThemeMode;
+
     if (
       themeModeFromStorage &&
       themeModeFromStorage !== 'auto' &&
       themeModeFromStorage in availableThemes
     ) {
-      setThemeModeState(themeModeFromStorage);
+      newThemeMode = themeModeFromStorage;
     } else {
-      setThemeModeState(getThemeModeSysColorScheme());
+      newThemeMode = getThemeModeSysColorScheme();
+    }
+
+    if (newThemeMode !== themeMode) {
+      setThemeModeState(newThemeMode);
     }
   };
 
