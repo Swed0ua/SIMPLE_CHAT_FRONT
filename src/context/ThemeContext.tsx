@@ -78,7 +78,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const setThemeMode = (mode: ThemeModeSettings) => {
     // Manually set the theme mode state
     saveThemeModeToStorage(mode);
-    if (mode === 'auto') {
+    if (!mode || mode === 'auto' || !(mode in availableThemes)) {
       setThemeModeState(getThemeModeSysColorScheme());
     } else {
       setThemeModeState(mode);
