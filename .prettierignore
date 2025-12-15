@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+Pods/
+vendor/
+
+# Build outputs
+build/
+dist/
+*.jsbundle
+
+# Generated files
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xccheckout
+*.moved-aside
+DerivedData/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Testing
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+Podfile.lock
