@@ -45,9 +45,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const getThemeModeFromStorage =
     async (): Promise<ThemeModeSettings | null> => {
-      const themeModeFromStorage = await AsyncStorage.getItem(
-        THEME_STORAGE_KEY,
-      );
+      const themeModeFromStorage =
+        await AsyncStorage.getItem(THEME_STORAGE_KEY);
       return themeModeFromStorage as ThemeModeSettings | null;
     };
 

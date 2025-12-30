@@ -10,17 +10,21 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/context/ThemeContext';
+import { Provider } from 'react-redux';
+import { store } from './src/store/store';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppContent />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppContent />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 
