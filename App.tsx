@@ -12,6 +12,7 @@ import {
 import { ThemeProvider } from './src/context/ThemeContext';
 import { Provider } from 'react-redux';
 import { store } from './src/store/store';
+import { LanguageProvider } from './src/context/LanguageContext';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -20,8 +21,12 @@ function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-          <AppContent />
+          <LanguageProvider>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            />
+            <AppContent />
+          </LanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </Provider>
