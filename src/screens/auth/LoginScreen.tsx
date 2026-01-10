@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useAuth } from '../hooks/authHook';
-import { Colors } from '../constants/colors';
+import { useAuth } from '../../hooks/authHook';
+import { Colors } from '../../constants/colors';
+import { useNavigation } from '@react-navigation/native';
+import { AuthNavigationProp } from '../../types/navigation';
 
-function AuthScreen() {
-  const { singInWithPassword, singUpWithPassword } = useAuth();
+function LoginScreen() {
+  const { singInWithPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const navigation = useNavigation<AuthNavigationProp>();
 
   const handleSingIn = async () => {
     const { error } = await singInWithPassword(email, password);
@@ -17,7 +21,7 @@ function AuthScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>Hello World</Text>
+      <Text>Login in to your account</Text>
       <TextInput
         style={styles.input}
         value={email}
@@ -33,11 +37,15 @@ function AuthScreen() {
         }}
       />
       <Button title="Sing In" onPress={handleSingIn} />
+      <Button
+        title="go to registration"
+        onPress={() => navigation.navigate('Register')}
+      />
     </View>
   );
 }
 
-export default AuthScreen;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {

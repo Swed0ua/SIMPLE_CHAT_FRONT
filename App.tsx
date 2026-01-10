@@ -14,6 +14,7 @@ import { store } from './src/store/store';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { LanguageProvider } from './src/context/LanguageContext';
 import { ProtectedRoute } from './src/components/ProtectedRoute';
+import { NavigationContainer } from '@react-navigation/native';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -26,9 +27,9 @@ function App() {
             <StatusBar
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             />
-            <ProtectedRoute>
-              <AppContent />
-            </ProtectedRoute>
+            <NavigationContainer>
+              <ProtectedRoute />
+            </NavigationContainer>
           </LanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -1,9 +1,9 @@
 import { useAuth } from '../hooks/authHook';
-import AuthScreen from '../screens/AuthScreen';
+import { AuthNavigation } from '../navigation/AuthNavigation';
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export function ProtectedRoute() {
   const { user } = useAuth();
 
-  if (!user) return <AuthScreen />;
-  return <>{children}</>;
+  if (!user) return <AuthNavigation />;
+  return <></>;
 }
