@@ -15,6 +15,7 @@ import { ThemeProvider } from './src/context/ThemeContext';
 import { LanguageProvider } from './src/context/LanguageContext';
 import { ProtectedRoute } from './src/components/ProtectedRoute';
 import { NavigationContainer } from '@react-navigation/native';
+import LoadingOverlay from './src/components/LoadingOvarlay';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -30,6 +31,7 @@ function App() {
             <NavigationContainer>
               <ProtectedRoute />
             </NavigationContainer>
+            <LoadingOverlay />
           </LanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>

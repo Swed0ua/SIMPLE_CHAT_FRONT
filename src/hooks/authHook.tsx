@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/store';
 import { supabase } from '../config/supabase';
 import { setIsAuthLoading, setSession } from '../store/slices/authSlice';
+import { withLoading } from '../utils/withLoading';
 
 export function useAuth() {
   const dispatch = useAppDispatch();
@@ -27,21 +28,25 @@ export function useAuth() {
   }, [dispatch]);
 
   const singInWithPassword = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    return withLoading(dispatch, async () => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    return { error };
+      return { error };
+    });
   };
 
   const singUpWithPassword = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    return withLoading(dispatch, async () => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    return { error };
+      return { error };
+    });
   };
 
   const signOut = async () => {
