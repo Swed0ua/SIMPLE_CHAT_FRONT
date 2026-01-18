@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/authHook';
 import { Colors } from '../../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../../types/navigation';
+import { IconArrowLeft } from '@tabler/icons-react-native';
 
 function LoginScreen() {
   const { singInWithPassword } = useAuth();
@@ -22,6 +23,7 @@ function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text>Login in to your account</Text>
+      <IconArrowLeft />
       <TextInput
         style={styles.input}
         value={email}
