@@ -6,4 +6,15 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
+export type MainStackParamList = {
+  MainTabs: undefined;
+  ChatDetails: { chatId: string };
+};
+
+export type MainTabParamList = {
+  Chats: undefined;
+  Contacts: undefined;
+  Profile: undefined;
+};
+
 export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
