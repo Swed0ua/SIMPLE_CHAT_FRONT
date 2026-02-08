@@ -12,6 +12,7 @@ export function useAuth() {
     supabase.auth
       .getSession()
       .then(({ data: { session: currentSession } }) => {
+        console.log('currentSession', currentSession);
         dispatch(setSession(currentSession));
         dispatch(setIsAuthLoading(false));
       })

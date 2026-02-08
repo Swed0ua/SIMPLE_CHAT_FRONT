@@ -12,8 +12,15 @@ export const BorderRadius = {
   md: 8,
   lg: 12,
   xl: 16,
+  xxl: 24,
   full: 9999,
 } as const;
+
+export const bottomTabSpacing = {
+  bottomTabHeight: 60,
+  bottomTabWeight: 60,
+  bottomTabIconSize: 28,
+};
 
 export type SpacingKeys = keyof typeof Spacing;
 export type BorderRadiusKeys = keyof typeof BorderRadius;

@@ -1,11 +1,94 @@
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useLinkBuilder } from '@react-navigation/native';
+import {
+  BottomTabBarProps,
+  BottomTabNavigationOptions,
+} from '@react-navigation/bottom-tabs';
+import { Route, useLinkBuilder } from '@react-navigation/native';
 import { Text, PlatformPressable } from '@react-navigation/elements';
-import { StyleSheet, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing } from '../../constants/spacing';
-import { getStyle } from './BottomTabStyle';
+import { getBottomTabItemStyle, getStyle } from './BottomTabStyle';
+import { useEffect, useRef } from 'react';
+import { bottomTabSpacing } from '../../constants/spacing';
+
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+export type BottomTabItemProps = {
+  route: Route<string, object | undefined>;
+  buildHref: (name: string, params?: object) => string | undefined;
+  isFocused: boolean;
+  onPress: () => void;
+  onLongPress: () => void;
+  textColor: string;
+  label: string;
+  options: BottomTabNavigationOptions;
+};
+
+export const BottomTabItem = ({
+  route,
+  buildHref,
+  isFocused,
+  onPress,
+  onLongPress,
+  label,
+  options,
+}: BottomTabItemProps) => {
+  const theme = useTheme();
+  const style = getBottomTabItemStyle({ theme: theme.theme });
+
+  const shadowAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+  const shadowColor = theme.theme.colors.primary[400];
+
+  const iconColor = isFocused
+    ? theme.theme.colors.primary[100]
+    : theme.theme.colors.primary[50];
+
+  useEffect(() => {
+    Animated.spring(shadowAnim, {
+      toValue: isFocused ? 1 : 0,
+      damping: 8,
+      mass: 1,
+      useNativeDriver: false,
+    }).start();
+  }, [isFocused, shadowAnim]);
+
+  return (
+    <View style={style.container}>
+      <PlatformPressable
+        key={route.key}
+        href={buildHref(route.name, route.params)}
+        accessibilityState={isFocused ? { selected: true } : {}}
+        accessibilityLabel={options.tabBarAccessibilityLabel}
+        testID={options.tabBarButtonTestID}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        style={style.item}
+      >
+        <AnimatedView
+          style={[
+            style.shadow,
+            {
+              boxShadow: shadowAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [
+                  `0 16px 0px 0px ${shadowColor}`,
+                  `0 16px 34px 22px ${shadowColor}`,
+                ],
+              }),
+            },
+          ]}
+        />
+        {options.tabBarIcon?.({
+          focused: isFocused,
+          color: iconColor,
+          size: bottomTabSpacing.bottomTabIconSize,
+        })}
+        {options.tabBarShowLabel && (
+          <Text style={{ color: iconColor }}>{label}</Text>
+        )}
+      </PlatformPressable>
+    </View>
+  );
+};
 
 export const BottomTab = ({
   state,
@@ -52,20 +135,17 @@ export const BottomTab = ({
         };
 
         return (
-          <PlatformPressable
+          <BottomTabItem
             key={route.key}
-            href={buildHref(route.name, route.params)}
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarButtonTestID}
+            route={route}
+            buildHref={buildHref}
+            isFocused={isFocused}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={{ flex: 1 }}
-          >
-            <Text style={{ color: isFocused ? textColor : 'red' }}>
-              {label}
-            </Text>
-          </PlatformPressable>
+            textColor={textColor}
+            label={label}
+            options={options}
+          />
         );
       })}
     </View>
