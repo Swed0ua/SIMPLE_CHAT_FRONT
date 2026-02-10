@@ -8,9 +8,9 @@ export interface Chat {
   type: ChatType;
   lastMessage?: string | null;
   lastMessageId?: string | null;
-  lastMessageAt?: Date | null;
+  lastMessageAt?: string | null;
   avatatUrl?: string;
-  createdAt: Date;
+  createdAt: string;
   createdById?: string | null;
   createdBy?: any;
 }
@@ -29,8 +29,8 @@ const mockChats: Chat[] = [
     type: ChatType.DIRECT,
     lastMessage: 'Hey, how are you?',
     lastMessageId: 'msg-1',
-    lastMessageAt: now,
-    createdAt: new Date(now.getTime() - 86400000),
+    lastMessageAt: now.toISOString(),
+    createdAt: new Date(now.getTime() - 86400000).toISOString(),
     createdById: 'user-2',
   },
   {
@@ -39,8 +39,8 @@ const mockChats: Chat[] = [
     type: ChatType.DIRECT,
     lastMessage: 'See you tomorrow',
     lastMessageId: 'msg-2',
-    lastMessageAt: new Date(now.getTime() - 3600000),
-    createdAt: new Date(now.getTime() - 172800000),
+    lastMessageAt: new Date(now.getTime() - 3600000).toISOString(),
+    createdAt: new Date(now.getTime() - 172800000).toISOString(),
     createdById: 'user-3',
   },
   {
@@ -49,8 +49,8 @@ const mockChats: Chat[] = [
     type: ChatType.GROUP,
     lastMessage: 'PR approved',
     lastMessageId: 'msg-3',
-    lastMessageAt: new Date(now.getTime() - 7200000),
-    createdAt: new Date(now.getTime() - 259200000),
+    lastMessageAt: new Date(now.getTime() - 7200000).toISOString(),
+    createdAt: new Date(now.getTime() - 259200000).toISOString(),
     createdById: 'user-1',
   },
 ];
