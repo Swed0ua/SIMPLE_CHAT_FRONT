@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../types/navigation';
-import ChatsScreen from '../components/ChatsScreen';
+import ChatsScreen from '../screens/main/ChatsScreen';
 import { BottomTab } from '../components/BottomTab/BottomTab';
 import {
   IconHomeFilled,
@@ -9,6 +9,7 @@ import {
   IconContainer,
 } from '@tabler/icons-react-native';
 import { ComponentType } from 'react';
+import { MAIN_TABS_ROUTES } from './routesConfig';
 
 const MainTabs = createBottomTabNavigator<MainTabParamList>();
 
@@ -28,11 +29,11 @@ export function MainTabsNavigation() {
   return (
     <MainTabs.Navigator
       screenOptions={{ headerShown: false, tabBarShowLabel: true }}
-      initialRouteName="Chats"
+      initialRouteName={MAIN_TABS_ROUTES.Chats}
       tabBar={props => <BottomTab {...props} />}
     >
       <MainTabs.Screen
-        name="Chats"
+        name={MAIN_TABS_ROUTES.Chats}
         component={ChatsScreen}
         options={{
           tabBarIcon: ({ focused, color, size }) =>
@@ -40,7 +41,7 @@ export function MainTabsNavigation() {
         }}
       />
       <MainTabs.Screen
-        name="Contacts"
+        name={MAIN_TABS_ROUTES.Contacts}
         component={ChatsScreen}
         options={{
           tabBarIcon: ({ focused, color, size }) =>

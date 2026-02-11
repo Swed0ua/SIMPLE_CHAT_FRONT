@@ -18,3 +18,4 @@ export type MainTabParamList = {
 };
 
 export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
+export type MainNavigationProp = NativeStackNavigationProp<MainStackParamList>;
