@@ -5,6 +5,7 @@ import { getStyle } from './ChatItemStyle';
 import { useTheme } from '../../context/ThemeContext';
 import { truncateForDisplay } from '../../utils/textFormating';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 type ChatItemProps = {
   chatItem: Chat;
@@ -13,6 +14,7 @@ type ChatItemProps = {
 
 function ChatItem({ chatItem, onPress }: ChatItemProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => getStyle({ theme: theme.theme }), [theme.theme]);
   const userSymbol = chatItem.title.charAt(0).toUpperCase();
   const renderChatItemAvatar = useCallback(() => {
@@ -24,9 +26,10 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
   }, [chatItem.title]);
 
   const truncatedLastMessage = truncateForDisplay(
-    chatItem?.lastMessage || '',
+    chatItem?.lastMessage ?? t('chatItem.noMessages'),
     40,
   );
+  const lastActiveTime = chatItem?.lastMessageAt ?? chatItem?.createdAt;
   const truncatedTitle = truncateForDisplay(chatItem.title ?? '', 24);
 
   return (
@@ -43,7 +46,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
             <Text style={styles.headerTitleText}>{truncatedTitle}</Text>
           </View>
           <View style={styles.headerTimeWrapper}>
-            <Text style={styles.headerTimeText}>10:00</Text>
+            <Text style={styles.headerTimeText}>{lastActiveTime}</Text>
           </View>
         </View>
         <View style={styles.contentTextWrapper}>

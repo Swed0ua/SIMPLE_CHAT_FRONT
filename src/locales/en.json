@@ -1,3 +1,6 @@
 {
-  "appName": "SimpleChat"
+  "appName": "SimpleChat",
+  "chatItem": {
+    "noMessages": "No messages"
+  }
 }
