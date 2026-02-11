@@ -4,10 +4,11 @@ import { useAppSelector } from '../../store/store';
 import { useCallback } from 'react';
 import { Chat } from '../../store/slices/chatSlice';
 import { Spacing } from '../../constants/spacing';
-import ChatItem from '../../components/ChatItem';
+import ChatItem from '../../components/ChatItem/ChatItem';
 import { useNavigation } from '@react-navigation/native';
 import { MainNavigationProp } from '../../types/navigation';
 import { ROUTES } from '../../navigation/routesConfig';
+import { MainScreenWrapper } from '../../components/MainScreenWrapper';
 
 export default function ChatsScreen() {
   const tabBarHeight = useAppSelector(s => s.layout.tabBarHeight);
@@ -39,23 +40,23 @@ export default function ChatsScreen() {
   }, [tabBarHeight]);
 
   return (
-    <SafeArea bottom={false}>
-      <View style={styles.container}>
-        <Text>Chats</Text>
-        <FlatList
-          data={chats}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          ListFooterComponent={renderChatListFooter}
-        />
-      </View>
-    </SafeArea>
+    <MainScreenWrapper>
+      <SafeArea bottom={false}>
+        <View style={styles.container}>
+          <FlatList
+            data={chats}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
+            ListFooterComponent={renderChatListFooter}
+          />
+        </View>
+      </SafeArea>
+    </MainScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
   },
 });

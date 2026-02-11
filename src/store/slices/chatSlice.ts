@@ -25,9 +25,10 @@ const now = new Date();
 const mockChats: Chat[] = [
   {
     id: '1',
-    title: 'John Doe',
+    title: 'John Doe \n dasad asdassdsdadasdds',
     type: ChatType.DIRECT,
-    lastMessage: 'Hey, how are you?',
+    lastMessage:
+      'Hey, \n how are you? And you / i am okay/ Heh today is good day',
     lastMessageId: 'msg-1',
     lastMessageAt: now.toISOString(),
     createdAt: new Date(now.getTime() - 86400000).toISOString(),
