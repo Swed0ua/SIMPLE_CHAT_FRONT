@@ -21,6 +21,8 @@ export const getStyle = ({
     container: {
       display: 'flex',
       flexDirection: 'row',
+      position: 'absolute',
+      bottom: 0,
       padding: Spacing.sm,
       paddingBottom: bottom ? bottom + Spacing.xs : Spacing.xs,
       backgroundColor: mainBgColor,

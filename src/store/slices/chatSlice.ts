@@ -56,7 +56,14 @@ const mockChats: Chat[] = [
 ];
 
 const initialState: ChatState = {
-  list: mockChats,
+  list: [
+    ...mockChats,
+    ...mockChats,
+    ...mockChats,
+    ...mockChats,
+    ...mockChats,
+    ...mockChats,
+  ], // For testing with more items
   isLoading: false,
   error: null,
 };

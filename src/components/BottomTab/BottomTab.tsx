@@ -9,6 +9,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { getBottomTabItemStyle, getStyle } from './BottomTabStyle';
 import { useEffect, useRef } from 'react';
 import { bottomTabSpacing } from '../../constants/spacing';
+import { useAppDispatch } from '../../store/store';
+import { setTabBarHeight } from '../../store/slices/layoutSlice';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -96,13 +98,20 @@ export const BottomTab = ({
   navigation,
   insets: _insets,
 }: BottomTabBarProps) => {
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const textColor = theme.theme.colors.text.inverse;
   const { buildHref } = useLinkBuilder();
 
   const style = getStyle({ theme: theme.theme, insets: _insets });
   return (
-    <View style={[style.container]}>
+    <View
+      style={[style.container]}
+      onLayout={e => {
+        const { height } = e.nativeEvent.layout;
+        dispatch(setTabBarHeight(height));
+      }}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         // @ts-ignore
