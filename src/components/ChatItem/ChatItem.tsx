@@ -38,7 +38,11 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
     <Pressable
       accessibilityLabel={`Chat item ${chatItem.title}`}
       accessibilityRole="button"
-      style={styles.chatItem}
+      style={({ pressed }) => [
+        styles.chatItem,
+        pressed && styles.chatItemPressed,
+      ]}
+      // android_ripple={{ color: 'rgba(0,0,0,0.1)' }} // TODO: add ripple effect for test in android
       onPress={onPress}
     >
       <View>{renderChatItemAvatar()}</View>

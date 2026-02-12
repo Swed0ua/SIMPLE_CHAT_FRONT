@@ -10,6 +10,9 @@ export const getStyle = ({ theme }: { theme: Theme }) => {
       alignItems: 'center',
       gap: theme.spacing.md,
     },
+    chatItemPressed: {
+      backgroundColor: theme.colors.primary[100],
+    },
     chatItemAvatar: {
       width: 40,
       height: 40,
