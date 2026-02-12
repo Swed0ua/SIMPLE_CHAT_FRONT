@@ -1,16 +1,16 @@
-import { Pressable, Text, View } from 'react-native';
 import { useCallback, useMemo } from 'react';
-import { Chat } from '../../store/slices/chatSlice';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getStyle } from './ChatItemStyle';
+import { Chat } from '../../store/slices/chatSlice';
 import { useTheme } from '../../context/ThemeContext';
 import { truncateForDisplay } from '../../utils/textFormating';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { formatChatTime } from '../../utils/timeFormating';
 
 type ChatItemProps = {
   chatItem: Chat;
-  onPress: () => void;
+  onPress: (chatId: string) => void;
 };
 
 function ChatItem({ chatItem, onPress }: ChatItemProps) {
@@ -34,6 +34,10 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
   const lastActiveTimeFormatted = formatChatTime(lastActiveTimeISO, t);
   const truncatedTitle = truncateForDisplay(chatItem.title ?? '', 24);
 
+  const handlePress = useCallback(() => {
+    onPress(chatItem.id);
+  }, [chatItem.id, onPress]);
+
   return (
     <Pressable
       accessibilityLabel={`Chat item ${chatItem.title}`}
@@ -43,7 +47,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
         pressed && styles.chatItemPressed,
       ]}
       // android_ripple={{ color: 'rgba(0,0,0,0.1)' }} // TODO: add ripple effect for test in android
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View>{renderChatItemAvatar()}</View>
       <View style={styles.contentWrapper}>

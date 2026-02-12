@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeArea } from '../../components/SafeArea';
 import { useAppSelector } from '../../store/store';
 import { useCallback } from 'react';
@@ -25,12 +25,7 @@ export default function ChatsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Chat }) => {
-      return (
-        <ChatItem
-          chatItem={item}
-          onPress={() => handleChatItemPress(item.id)}
-        />
-      );
+      return <ChatItem chatItem={item} onPress={handleChatItemPress} />;
     },
     [handleChatItemPress],
   );
