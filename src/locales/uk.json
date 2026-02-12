@@ -2,5 +2,8 @@
   "appName": "Простий Чат",
   "chatItem": {
     "noMessages": "Немає повідомлень"
+  },
+  "time": {
+    "yesterday": "Вчора"
   }
 }

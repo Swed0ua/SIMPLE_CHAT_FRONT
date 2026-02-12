@@ -6,6 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { truncateForDisplay } from '../../utils/textFormating';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatChatTime } from '../../utils/timeFormating';
 
 type ChatItemProps = {
   chatItem: Chat;
@@ -29,7 +30,8 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
     chatItem?.lastMessage ?? t('chatItem.noMessages'),
     40,
   );
-  const lastActiveTime = chatItem?.lastMessageAt ?? chatItem?.createdAt;
+  const lastActiveTimeISO = chatItem?.lastMessageAt ?? chatItem?.createdAt;
+  const lastActiveTimeFormatted = formatChatTime(lastActiveTimeISO, t);
   const truncatedTitle = truncateForDisplay(chatItem.title ?? '', 24);
 
   return (
@@ -46,7 +48,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
             <Text style={styles.headerTitleText}>{truncatedTitle}</Text>
           </View>
           <View style={styles.headerTimeWrapper}>
-            <Text style={styles.headerTimeText}>{lastActiveTime}</Text>
+            <Text style={styles.headerTimeText}>{lastActiveTimeFormatted}</Text>
           </View>
         </View>
         <View style={styles.contentTextWrapper}>
