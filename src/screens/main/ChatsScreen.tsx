@@ -1,8 +1,8 @@
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeArea } from '../../components/SafeArea';
-import { useAppSelector } from '../../store/store';
-import { useCallback } from 'react';
-import { Chat } from '../../store/slices/chatSlice';
+import { useAppDispatch, useAppSelector } from '../../store/store';
+import { useCallback, useEffect } from 'react';
+import { Chat, fetchChats } from '../../store/slices/chatSlice';
 import { Spacing } from '../../constants/spacing';
 import ChatItem from '../../components/ChatItem/ChatItem';
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { MainScreenWrapper } from '../../components/MainScreenWrapper';
 export default function ChatsScreen() {
   const tabBarHeight = useAppSelector(s => s.layout.tabBarHeight);
   const chats = useAppSelector(s => s.chat.list);
+  const dispatch = useAppDispatch();
 
   const navigation = useNavigation<MainNavigationProp>();
 
@@ -33,6 +34,10 @@ export default function ChatsScreen() {
   const renderChatListFooter = useCallback(() => {
     return <View style={{ height: tabBarHeight + Spacing.sm }} />;
   }, [tabBarHeight]);
+
+  useEffect(() => {
+    dispatch(fetchChats());
+  }, [dispatch]);
 
   return (
     <MainScreenWrapper>

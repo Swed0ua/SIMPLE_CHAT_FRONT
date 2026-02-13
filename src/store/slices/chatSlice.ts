@@ -9,7 +9,7 @@ export interface Chat {
   lastMessage?: string | null;
   lastMessageId?: string | null;
   lastMessageAt?: string | null;
-  avatatUrl?: string;
+  avatarUrl?: string;
   createdAt: string;
   createdById?: string | null;
   createdBy?: any;
@@ -57,14 +57,7 @@ const mockChats: Chat[] = [
 ];
 
 const initialState: ChatState = {
-  list: [
-    ...mockChats,
-    ...mockChats,
-    ...mockChats,
-    ...mockChats,
-    ...mockChats,
-    ...mockChats,
-  ], // For testing with more items
+  list: [],
   isLoading: false,
   error: null,
 };

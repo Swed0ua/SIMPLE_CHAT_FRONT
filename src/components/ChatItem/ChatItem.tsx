@@ -24,7 +24,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
         <Text>{userSymbol}</Text>
       </View>
     );
-  }, [chatItem.title]);
+  }, [styles.chatItemAvatar, userSymbol]);
 
   const truncatedLastMessage = truncateForDisplay(
     chatItem?.lastMessage ?? t('chatItem.noMessages'),
@@ -48,6 +48,10 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
       ]}
       // android_ripple={{ color: 'rgba(0,0,0,0.1)' }} // TODO: add ripple effect for test in android
       onPress={handlePress}
+      onLongPress={() => {
+        // TODO: add long press action
+        console.log('long press');
+      }}
     >
       <View>{renderChatItemAvatar()}</View>
       <View style={styles.contentWrapper}>
