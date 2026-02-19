@@ -15,6 +15,9 @@ export interface Chat {
   createdBy?: any;
 }
 
+// TODO: temporary type for updating a single list item (id required).
+export type ChatUpdateItem = Pick<Chat, 'id'> & Partial<Omit<Chat, 'id'>>;
+
 export interface ChatState {
   list: Chat[];
   isLoading: boolean;
@@ -62,6 +65,7 @@ const initialState: ChatState = {
   error: null,
 };
 
+// TODO: move to dedicated selectors folder
 export const fetchChats = createAsyncThunk<
   Chat[],
   void,
@@ -70,6 +74,25 @@ export const fetchChats = createAsyncThunk<
   await new Promise<void>(resolve => setTimeout(resolve, 1000));
   return mockChats;
 });
+
+export function sortChatsByLastActivity<
+  T extends Pick<Chat, 'lastMessageAt' | 'createdAt'>,
+>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    const aLast = a.lastMessageAt ?? null;
+    const bLast = b.lastMessageAt ?? null;
+
+    if (!aLast && !bLast) {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+
+    if (!aLast) return 1;
+    if (!bLast) return -1;
+
+    return new Date(bLast).getTime() - new Date(aLast).getTime();
+  });
+}
+// -----------------------------
 
 // TODO: Implement real fetch from backend.
 const chatSlice = createSlice({
@@ -85,6 +108,14 @@ const chatSlice = createSlice({
     },
     setChatsError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
+    },
+    updateChatListElement: (state, action: PayloadAction<ChatUpdateItem>) => {
+      const item = action.payload;
+      const chat = state.list.find(c => c.id === item.id);
+      if (chat) {
+        Object.assign(chat, item);
+        state.list = sortChatsByLastActivity([...state.list]);
+      }
     },
   },
   extraReducers: builder => {
@@ -105,5 +136,10 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setChats, setChatsLoading, setChatsError } = chatSlice.actions;
+export const {
+  setChats,
+  setChatsLoading,
+  setChatsError,
+  updateChatListElement,
+} = chatSlice.actions;
 export default chatSlice.reducer;
