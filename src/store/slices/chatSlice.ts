@@ -43,8 +43,8 @@ const mockChats: Chat[] = [
     type: ChatType.DIRECT,
     lastMessage: 'See you tomorrow',
     lastMessageId: 'msg-2',
-    lastMessageAt: new Date(now.getTime() - 3600000).toISOString(),
-    createdAt: new Date(now.getTime() - 172800000).toISOString(),
+    lastMessageAt: new Date(now.getTime() - 131600000).toISOString(),
+    createdAt: new Date(now.getTime() - 1072800000).toISOString(),
     createdById: 'user-3',
   },
   {

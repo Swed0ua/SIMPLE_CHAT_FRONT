@@ -1,7 +1,13 @@
 import { configureStore, createSelector } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
-import { appReducer, authReducer, chatReducer, layoutReducer } from './slices';
+import {
+  appReducer,
+  authReducer,
+  chatReducer,
+  layoutReducer,
+  messagesReducer,
+} from './slices';
 
 export const store = configureStore({
   reducer: {
@@ -9,6 +15,7 @@ export const store = configureStore({
     auth: authReducer,
     chat: chatReducer,
     layout: layoutReducer,
+    messages: messagesReducer,
   },
 });
 
