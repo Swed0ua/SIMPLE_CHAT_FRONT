@@ -13,7 +13,7 @@ const TEXTS = [
   'Hi there',
   'How are you?',
   'Good, you?',
-  'Same here, thanks',
+  'Same here, thanks, i dont look like a cat, i look like a dog',
   "What's up?",
   'Not much',
   'Cool',
@@ -47,9 +47,9 @@ export const MOCK_MESSAGES: MockMessageItem[] = Array.from(
     const index = i + 1;
     return {
       id: `m${index}`,
-      senderId: index % 2 === 1 ? 'u1' : 'u2',
+      senderId: index % 3 === 0 ? 'u1' : 'u2',
       text: TEXTS[index % TEXTS.length],
       createdAt: new Date(now - (100 - index) * HOUR).toISOString(),
     };
   },
-);
+).reverse();

@@ -1,5 +1,5 @@
 export const MESSAGES_CONFIG = {
-  initialLoadLimit: 10,
-  loadMoreLimit: 5,
+  initialLoadLimit: 50,
+  loadMoreLimit: 20,
   scrollToBottomChatThreshold: 80,
 } as const;

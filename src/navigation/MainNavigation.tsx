@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
 import { MainTabsNavigation } from './MainTabsNavigation';
-import ChatDetailsScreen from '../screens/main/ChatDetailsScreen';
+import ChatDetailsScreen from '../screens/main/ChatDetailsScreen/ChatDetailsScreen';
 import { ROUTES } from './routesConfig';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();

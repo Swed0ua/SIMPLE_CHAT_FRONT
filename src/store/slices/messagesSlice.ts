@@ -15,6 +15,7 @@ export interface Message {
 export interface MessagesState {
   byChatId: Record<string, Message[]>;
   loadingByChatId: Record<string, boolean>;
+  loadingMoreByChatId: Record<string, boolean>;
   errorByChatId: Record<string, string | null>;
   hasMoreByChatId: Record<string, boolean>;
 }
@@ -27,6 +28,7 @@ type FetchMessagesPayload = {
 const initialState: MessagesState = {
   byChatId: {},
   loadingByChatId: {},
+  loadingMoreByChatId: {},
   errorByChatId: {},
   hasMoreByChatId: {},
 };
@@ -42,10 +44,12 @@ export const fetchMessagesByChatId = createAsyncThunk<
   'messages/fetchMessages',
   async ({ chatId, cursor = null }: FetchMessagesPayload) => {
     console.log('fetchMessagesByChatId : ', chatId);
-    await new Promise<void>(resolve => setTimeout(resolve, 1000));
+    await new Promise<void>(resolve => setTimeout(resolve, 5000));
     if (!cursor) {
+      console.log('mm : ', mockMessages);
+
       return mockMessages
-        .slice(-MESSAGES_CONFIG.initialLoadLimit)
+        .slice(0, MESSAGES_CONFIG.initialLoadLimit)
         .map(m => ({ ...m, chatId }));
     }
     const cursorTime = new Date(cursor.createdAt).getTime();
@@ -54,7 +58,7 @@ export const fetchMessagesByChatId = createAsyncThunk<
     });
     console.log('===olderMessages : ', olderMessages.length);
     const chunk = olderMessages
-      .slice(-MESSAGES_CONFIG.loadMoreLimit)
+      .slice(0, MESSAGES_CONFIG.loadMoreLimit)
       .map(m => ({ ...m, chatId }));
     return chunk;
   },
@@ -70,7 +74,7 @@ export const loadMoreMessages = createAsyncThunk<
   const hasMore = state.hasMoreByChatId[chatId] !== false;
   if (!hasMore) return;
 
-  const oldest = list[0];
+  const oldest = list[list.length - 1];
 
   await dispatch(
     fetchMessagesByChatId({
@@ -89,8 +93,11 @@ const messagesSlice = createSlice({
       .addCase(fetchMessagesByChatId.pending, (state, action) => {
         const arg = action.meta.arg;
         const chatId = arg.chatId;
+        const isLoadingMore = arg.cursor != null;
         const payload = action.payload;
-        state.loadingByChatId[chatId] = true;
+
+        state.loadingByChatId[chatId] = !isLoadingMore;
+        state.loadingMoreByChatId[chatId] = isLoadingMore;
         state.errorByChatId[chatId] = null;
       })
       .addCase(fetchMessagesByChatId.fulfilled, (state, action) => {
@@ -98,11 +105,12 @@ const messagesSlice = createSlice({
         const hasCursor = action.meta.arg.cursor != null;
 
         state.loadingByChatId[chatId] = false;
+        state.loadingMoreByChatId[chatId] = false;
 
         if (hasCursor) {
           state.byChatId[chatId] = [
-            ...action.payload,
             ...(state.byChatId[chatId] ?? []),
+            ...action.payload,
           ];
         } else {
           state.byChatId[chatId] = action.payload;
@@ -113,6 +121,8 @@ const messagesSlice = createSlice({
         const chatId = action.meta.arg.chatId;
 
         state.loadingByChatId[chatId] = false;
+        state.loadingMoreByChatId[chatId] = false;
+
         state.errorByChatId[chatId] = action.payload ?? 'Failed to load chats';
       });
   },

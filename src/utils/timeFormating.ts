@@ -40,3 +40,14 @@ export function formatChatTime(
   }
   return format(date, 'dd.MM.yy', { locale });
 }
+
+export function formatTimeShort(
+  isoString: string | null | undefined,
+  _t: TFunction | null = null,
+): string {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const locale = getDateLocale();
+  if (isNaN(date.getTime())) return '';
+  return format(date, 'HH:mm', { locale });
+}
