@@ -1,6 +1,17 @@
 import React from 'react';
-import ShimmerSkeletonBase from '../ShimmerSkeleton/ShimmerSkeleton';
+import {
+  ShimmerSkeleton,
+  ShimmerSkeletonCircle,
+  ShimmerSkeletonRounded,
+} from '../ShimmerSkeleton/ShimmerSkeleton';
+import { View } from 'react-native';
 
 export default function ChatDetailsSkeleton() {
-  return <ShimmerSkeletonBase style={{ width: 200, height: 200 }} />;
+  return (
+    <View>
+      <ShimmerSkeleton style={{ width: 200, height: 200 }} />
+      <ShimmerSkeletonRounded />
+      <ShimmerSkeletonCircle />
+    </View>
+  );
 }

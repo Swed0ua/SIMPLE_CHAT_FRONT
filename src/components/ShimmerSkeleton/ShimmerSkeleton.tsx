@@ -1,10 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, ViewProps, ViewStyle } from 'react-native';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 export interface ShimmerSkeletonProps extends ViewProps {
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>[] | ViewStyle | undefined;
   children?: React.ReactNode;
   baseColor?: string;
   shimmerColor?: string;
@@ -86,6 +93,68 @@ function ShimmerSkeletonBase({
   );
 }
 
+function ShimmerSkeleton(props: ShimmerSkeletonProps) {
+  return <ShimmerSkeletonBase {...props} />;
+}
+
+interface ShimmerSkeletonCircleProps extends Omit<
+  ShimmerSkeletonProps,
+  'style'
+> {
+  size?: number;
+  style?: StyleProp<ViewStyle>[] | ViewStyle | undefined;
+}
+function ShimmerSkeletonCircle({
+  size,
+  style,
+  ...props
+}: ShimmerSkeletonCircleProps) {
+  const circleSize = size ?? 120;
+  return (
+    <ShimmerSkeletonBase
+      style={[
+        { width: circleSize, height: circleSize, borderRadius: circleSize / 2 },
+        style,
+      ]}
+      {...props}
+    />
+  );
+}
+
+export interface ShimmerSkeletonRoundedProps extends ShimmerSkeletonProps {
+  borderRadius?: number;
+  width?: number;
+  height?: number;
+}
+
+function ShimmerSkeletonRounded({
+  borderRadius,
+  width,
+  height,
+  style,
+  ...props
+}: ShimmerSkeletonRoundedProps) {
+  const themeStyle = useTheme();
+  const { theme } = themeStyle;
+  const roundedBorderRadius = borderRadius ?? theme.borderRadius?.xl;
+  const roundedWidth = width ?? theme.borderRadius?.xl * 10;
+  const roundedHeight = height ?? theme.borderRadius?.xl * 10;
+
+  return (
+    <ShimmerSkeletonBase
+      style={[
+        style,
+        {
+          width: roundedWidth,
+          height: roundedHeight,
+          borderRadius: roundedBorderRadius,
+        },
+      ]}
+      {...props}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   base: { overflow: 'hidden' },
   shimmer: {
@@ -100,5 +169,4 @@ const styles = StyleSheet.create({
     width: 120,
   },
 });
-
-export default ShimmerSkeletonBase;
+export { ShimmerSkeleton, ShimmerSkeletonCircle, ShimmerSkeletonRounded };
