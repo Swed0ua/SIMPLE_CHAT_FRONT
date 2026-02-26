@@ -113,8 +113,9 @@ export default function ChatDetailsScreen({
     <View style={styles.container}>
       <Text>Hello world</Text>
       <Text>Chat Details {chatId}</Text>
-      <View>
+      <View style={{ flex: 1 }}>
         <ChatDetailsSkeleton />
+        <View style={{ height: 100, backgroundColor: 'blue' }} />
         {/* <FlatList
           data={messages}
           keyExtractor={item => item.id}
