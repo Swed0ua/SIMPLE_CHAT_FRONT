@@ -20,7 +20,11 @@ export default function ChatDetailsSkeleton() {
       {/* <ShimmerSkeleton style={{ width: 200, height: 200 }} />
       <ShimmerSkeletonRounded />
       <ShimmerSkeletonCircle /> */}
-      <ShimmerSkeletonGroup width={250} height={320} shapes={shapes} />
+      <ShimmerSkeletonGroup
+        width={metadata.width}
+        height={metadata.height}
+        shapes={shapes}
+      />
     </View>
   );
 }
