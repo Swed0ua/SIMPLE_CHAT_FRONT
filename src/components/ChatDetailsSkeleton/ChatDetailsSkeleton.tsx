@@ -1,17 +1,26 @@
 import React from 'react';
-import {
-  ShimmerSkeleton,
-  ShimmerSkeletonCircle,
-  ShimmerSkeletonRounded,
-} from '../ShimmerSkeleton/ShimmerSkeleton';
 import { View } from 'react-native';
+import ShimmerSkeletonGroup from '../ShimmerSkeleton/ShimmerSkeletonGroup';
+import { createShimmerLayout } from '../ShimmerSkeleton/ShimmerLayoutFactory';
+
+const { shapes, metadata } = createShimmerLayout({
+  gap: 12,
+  padding: 16,
+  items: [
+    { type: 'round', width: 280, height: 80 },
+    { type: 'rect', width: 120, height: 16 },
+    { type: 'rect', width: 200, height: 16 },
+    { type: 'circle', r: 28 },
+  ],
+});
 
 export default function ChatDetailsSkeleton() {
   return (
     <View>
-      <ShimmerSkeleton style={{ width: 200, height: 200 }} />
+      {/* <ShimmerSkeleton style={{ width: 200, height: 200 }} />
       <ShimmerSkeletonRounded />
-      <ShimmerSkeletonCircle />
+      <ShimmerSkeletonCircle /> */}
+      <ShimmerSkeletonGroup width={250} height={320} shapes={shapes} />
     </View>
   );
 }
