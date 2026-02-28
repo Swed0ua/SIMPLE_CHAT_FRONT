@@ -1,6 +1,9 @@
 import { mainConfig } from '../../config/main';
 import {
+  CrossAlign,
+  LayoutDefaults,
   ShimmerShape,
+  ShimmerShapeArea,
   ShimmerShapeCircle,
   ShimmerShapeRect,
 } from './ShimmerSkeleton.types';
@@ -56,6 +59,8 @@ export type SkeletonBlock = {
   shapes: ShimmerShape[];
   width: number;
   height: number;
+  area?: ShimmerShapeArea;
+  alignSelf?: CrossAlign;
 };
 
 // --- Defaults for shape creation ---
@@ -113,6 +118,16 @@ function createShapeFromItem(
   return { shape, nextX: getRight(shape) + gapX };
 }
 
+function getCrossOffset(
+  align: CrossAlign,
+  slotSize: number,
+  contentSize: number,
+): number {
+  if (align === 'start') return 0;
+  if (align === 'end') return slotSize - contentSize;
+  return (slotSize - contentSize) / 2;
+}
+
 /** Offset all shapes by (dx, dy). */
 function offsetShapes(
   shapes: ShimmerShape[],
@@ -127,33 +142,65 @@ function offsetShapes(
   });
 }
 
-// --- Primitives: one shape in local (0,0) ---
-export function renderCircle(opts?: {
-  r?: number;
-  cx?: number;
-  cy?: number;
-}): SkeletonBlock {
-  const r = opts?.r ?? mainConfig.SKELETON_FACTORY_DEFAULT_CIRCLE_R;
-  const cx = opts?.cx ?? r;
-  const cy = opts?.cy ?? r;
-  const shape: ShimmerShapeCircle = { type: 'circle', cx, cy, r };
+// --- Padding helpers (optional 4 sides or shorthand) ---
+type PaddingOpts = {
+  padding?: number;
+  paddingTop?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+};
+
+function resolvePadding(opts?: PaddingOpts): {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+} {
+  const p = opts?.padding ?? 0;
   return {
-    shapes: [shape],
-    width: 2 * r,
-    height: 2 * r,
+    top: opts?.paddingTop ?? p,
+    left: opts?.paddingLeft ?? p,
+    right: opts?.paddingRight ?? p,
+    bottom: opts?.paddingBottom ?? p,
   };
 }
 
-export function renderRect(opts?: {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  borderRadius?: number;
-}): SkeletonBlock {
+// --- Primitives: one shape in local (0,0) ---
+export function renderCircle(
+  opts?: {
+    r?: number;
+    cx?: number;
+    cy?: number;
+  } & PaddingOpts,
+): SkeletonBlock {
+  const r = opts?.r ?? mainConfig.SKELETON_FACTORY_DEFAULT_CIRCLE_R;
+  const pad = resolvePadding(opts);
+  const cx = (opts?.cx ?? r) + pad.left;
+  const cy = (opts?.cy ?? r) + pad.top;
+  const shape: ShimmerShapeCircle = { type: 'circle', cx, cy, r };
+  const contentW = 2 * r;
+  const contentH = 2 * r;
+  return {
+    shapes: [shape],
+    width: pad.left + contentW + pad.right,
+    height: pad.top + contentH + pad.bottom,
+  };
+}
+
+export function renderRect(
+  opts?: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    borderRadius?: number;
+  } & PaddingOpts,
+): SkeletonBlock {
   const defaultRect = mainConfig.SKELETON_FACTORY_DEFAULT_RECT;
-  const x = opts?.x ?? 0;
-  const y = opts?.y ?? 0;
+  const pad = resolvePadding(opts);
+  const x = (opts?.x ?? 0) + pad.left;
+  const y = (opts?.y ?? 0) + pad.top;
   const width = opts?.width ?? defaultRect.width;
   const height = opts?.height ?? defaultRect.height;
   const borderRadius = opts?.borderRadius ?? 0;
@@ -165,24 +212,29 @@ export function renderRect(opts?: {
     height,
     borderRadius,
   };
+  const contentW = (opts?.x ?? 0) + width;
+  const contentH = (opts?.y ?? 0) + height;
   return {
     shapes: [shape],
-    width: x + width,
-    height: y + height,
+    width: pad.left + contentW + pad.right,
+    height: pad.top + contentH + pad.bottom,
   };
 }
 
-export function renderRound(opts?: {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  borderRadius?: number;
-}): SkeletonBlock {
+export function renderRound(
+  opts?: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    borderRadius?: number;
+  } & PaddingOpts,
+): SkeletonBlock {
   const defaultRect = mainConfig.SKELETON_FACTORY_DEFAULT_RECT;
   const defaultRadius = mainConfig.SKELETON_FACTORY_DEFAULT_ROUND_BORDER_RADIUS;
-  const x = opts?.x ?? 0;
-  const y = opts?.y ?? 0;
+  const pad = resolvePadding(opts);
+  const x = (opts?.x ?? 0) + pad.left;
+  const y = (opts?.y ?? 0) + pad.top;
   const width = opts?.width ?? defaultRect.width;
   const height = opts?.height ?? defaultRect.height;
   const borderRadius = opts?.borderRadius ?? defaultRadius;
@@ -194,64 +246,125 @@ export function renderRound(opts?: {
     height,
     borderRadius,
   };
+  const contentW = (opts?.x ?? 0) + width;
+  const contentH = (opts?.y ?? 0) + height;
   return {
     shapes: [shape],
-    width: x + width,
-    height: y + height,
+    width: pad.left + contentW + pad.right,
+    height: pad.top + contentH + pad.bottom,
   };
+}
+
+function clampSize(value: number, min?: number, max?: number): number {
+  let v = value;
+  if (min != null) v = Math.max(v, min);
+  if (max != null) v = Math.min(v, max);
+  return v;
 }
 
 // --- Row: place blocks horizontally (local 0,0) ---
 export function skeletonRow(
   children: SkeletonBlock[],
-  options?: { gap?: number },
+  options?: { gap?: number; alignItems?: CrossAlign },
 ): SkeletonBlock {
   const gap = options?.gap ?? mainConfig.SKELETON_FACTORY_GAP;
+  const alignItems = options?.alignItems ?? 'start';
   if (children.length === 0) {
     return { shapes: [], width: 0, height: 0 };
   }
 
+  const rowHeight = Math.max(
+    ...children.map(c =>
+      c.area?.fillCrossAxis
+        ? c.height
+        : clampSize(c.height, c.area?.minHeight, c.area?.maxHeight),
+    ),
+  );
+
   let x = 0;
-  let maxHeight = 0;
   const shapes: ShimmerShape[] = [];
 
   for (const child of children) {
-    shapes.push(...offsetShapes(child.shapes, x, 0));
-    maxHeight = Math.max(maxHeight, child.height);
+    const effectiveHeight = child.area?.fillCrossAxis
+      ? rowHeight
+      : clampSize(child.height, child.area?.minHeight, child.area?.maxHeight);
+    const align = child.alignSelf ?? alignItems;
+    const offsetY = getCrossOffset(align, rowHeight, effectiveHeight);
+    shapes.push(...offsetShapes(child.shapes, x, offsetY));
     x += child.width + gap;
   }
 
   return {
     shapes,
     width: x - gap,
-    height: maxHeight,
+    height: rowHeight,
   };
 }
 
 // --- Column: place blocks vertically (local 0,0) ---
 export function skeletonColumn(
   children: SkeletonBlock[],
-  options?: { gap?: number },
+  options?: { gap?: number; alignItems?: CrossAlign },
 ): SkeletonBlock {
   const gap = options?.gap ?? mainConfig.SKELETON_FACTORY_GAP;
+  const alignItems = options?.alignItems ?? 'start';
   if (children.length === 0) {
     return { shapes: [], width: 0, height: 0 };
   }
 
+  const columnWidth = Math.max(
+    ...children.map(c =>
+      c.area?.fillCrossAxis
+        ? c.width
+        : clampSize(c.width, c.area?.minWidth, c.area?.maxWidth),
+    ),
+  );
+
   let y = 0;
-  let maxWidth = 0;
   const shapes: ShimmerShape[] = [];
 
   for (const child of children) {
-    shapes.push(...offsetShapes(child.shapes, 0, y));
-    maxWidth = Math.max(maxWidth, child.width);
+    const effectiveWidth = child.area?.fillCrossAxis
+      ? columnWidth
+      : clampSize(child.width, child.area?.minWidth, child.area?.maxWidth);
+    const align = child.alignSelf ?? alignItems;
+    const offsetX = getCrossOffset(align, columnWidth, effectiveWidth);
+    shapes.push(...offsetShapes(child.shapes, offsetX, y));
     y += child.height + gap;
   }
 
   return {
     shapes,
-    width: maxWidth,
+    width: columnWidth,
     height: y - gap,
+  };
+}
+
+export function createLayout(defaults: LayoutDefaults) {
+  return {
+    skeletonRow(
+      children: SkeletonBlock[],
+      options?: { gap?: number; alignItems?: CrossAlign },
+    ) {
+      return skeletonRow(children, {
+        gap: options?.gap ?? defaults.gap,
+        alignItems: options?.alignItems ?? defaults.alignItems,
+      });
+    },
+    skeletonColumn(
+      children: SkeletonBlock[],
+      options?: { gap?: number; alignItems?: CrossAlign },
+    ) {
+      return skeletonColumn(children, {
+        gap: options?.gap ?? defaults.gap,
+        alignItems: options?.alignItems ?? defaults.alignItems,
+      });
+    },
+    renderSkeleton(root: SkeletonBlock, options?: { padding?: number }) {
+      return renderSkeleton(root, {
+        padding: options?.padding ?? defaults.padding,
+      });
+    },
   };
 }
 

@@ -14,4 +14,20 @@ export type ShimmerShapeCircle = {
   r: number;
 };
 
+export type ShimmerShapeArea = {
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+  fillCrossAxis?: boolean;
+};
+
+export type CrossAlign = 'start' | 'center' | 'end';
+
 export type ShimmerShape = ShimmerShapeRect | ShimmerShapeCircle;
+
+export type LayoutDefaults = {
+  gap?: number;
+  padding?: number;
+  alignItems?: CrossAlign;
+};

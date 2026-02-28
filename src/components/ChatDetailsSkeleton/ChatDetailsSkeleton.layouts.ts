@@ -54,6 +54,7 @@ export const buildMultipleLayout: ChatDetailsLayoutBuilder = ({
       [renderCircle(), createMessageBubbleBlock(randomComponentWidth)],
       {
         gap: MESSAGE_GAP_X,
+        alignItems: 'end',
       },
     );
   });
