@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { MOCK_MESSAGES } from '../../mocks/mockMessages';
 import { MESSAGES_CONFIG } from '../../config/mesages';
+import { ChatType } from '../../types/chat';
 
 export interface Message {
   id: string;
@@ -14,6 +15,7 @@ export interface Message {
 
 export interface MessagesState {
   byChatId: Record<string, Message[]>;
+  chatTypes: Record<string, ChatType>;
   loadingByChatId: Record<string, boolean>;
   loadingMoreByChatId: Record<string, boolean>;
   errorByChatId: Record<string, string | null>;
@@ -27,6 +29,7 @@ type FetchMessagesPayload = {
 
 const initialState: MessagesState = {
   byChatId: {},
+  chatTypes: {},
   loadingByChatId: {},
   loadingMoreByChatId: {},
   errorByChatId: {},

@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getStyles } from './ChatDetailsScreen.styles';
 import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
+import { ChatType } from '../../../types/chat';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -38,6 +39,9 @@ export default function ChatDetailsScreen({
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => getStyles({ theme, insets }), [theme, insets]);
 
+  const chatType =
+    useAppSelector(s => s.chat.list.find(c => c.id === chatId)?.type) ??
+    ChatType.DIRECT;
   const messages = useAppSelector(s => s.messages.byChatId[chatId]);
   const cuurentUserId = useAppSelector(s => s.auth.user?.id);
   const loading = useAppSelector(s => s.messages.loadingByChatId[chatId]);
@@ -113,30 +117,34 @@ export default function ChatDetailsScreen({
     <View style={styles.container}>
       <Text>Hello world</Text>
       <Text>Chat Details {chatId}</Text>
-      <View style={{ flex: 1 }}>
-        <ChatDetailsSkeleton />
-        <View style={{ height: 100, backgroundColor: 'blue' }} />
-        {/* <FlatList
-          data={messages}
-          keyExtractor={item => item.id}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.3}
-          // onScroll={handleScroll}
-          scrollEventThrottle={16}
-          inverted={true}
-          style={styles.listContainer}
-          ListFooterComponent={() => listFooter}
-          ListHeaderComponent={() => (
-            <View style={styles.listBottomContainer} />
-          )}
-          renderItem={({ item, index }) => (
-            <ChatBubble
-              message={item}
-              currentUserId={'u1'}
-              isInMessagesGroup={isInMessagesGroup(index)}
-            />
-          )}
-        /> */}
+      <View style={{ flex: 1, overflow: 'hidden' }}>
+        {loading ? (
+          <ChatDetailsSkeleton
+            variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
+          />
+        ) : (
+          <FlatList
+            data={messages}
+            keyExtractor={item => item.id}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.3}
+            // onScroll={handleScroll}
+            scrollEventThrottle={16}
+            inverted={true}
+            style={styles.listContainer}
+            ListFooterComponent={() => listFooter}
+            ListHeaderComponent={() => (
+              <View style={styles.listBottomContainer} />
+            )}
+            renderItem={({ item, index }) => (
+              <ChatBubble
+                message={item}
+                currentUserId={'u1'}
+                isInMessagesGroup={isInMessagesGroup(index)}
+              />
+            )}
+          />
+        )}
       </View>
     </View>
   );
