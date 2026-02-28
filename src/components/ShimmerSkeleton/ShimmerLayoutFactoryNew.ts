@@ -5,7 +5,6 @@ import {
   ShimmerShapeRect,
 } from './ShimmerSkeleton.types';
 
-// --- Input types ---
 export type RectInput = {
   type: 'rect';
   x?: number;
