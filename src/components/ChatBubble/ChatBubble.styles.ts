@@ -5,17 +5,37 @@ import { IsInMessagesGroupInterface } from '../../screens/main/ChatDetailsScreen
 const getStyles = ({
   theme,
   isInMessagesGroup,
+  avatarSize,
 }: {
   theme: Theme;
   isInMessagesGroup: IsInMessagesGroupInterface;
+  avatarSize: number;
 }) => {
   const { colors, spacing, borderRadius, typography } = theme;
   const { isFirst, isLast } = isInMessagesGroup;
+  const messageGap = spacing.sm;
   return StyleSheet.create({
     wrapper: { maxWidth: '80%', marginVertical: spacing.xs },
     wrapperOwn: { alignSelf: 'flex-end' },
     wrapperOther: { alignSelf: 'flex-start' },
+    wrapperRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: messageGap,
+    },
+    avatarCircle: {
+      width: avatarSize,
+      height: avatarSize,
+      borderRadius: avatarSize,
+      backgroundColor: '#3b82f6',
+    },
+    senderName: {
+      fontSize: typography.fontSize.xs,
+      color: colors.text.secondary,
+      marginBottom: spacing.xs,
+    },
 
+    bubbleOffset: { marginLeft: avatarSize + messageGap },
     bubble: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,

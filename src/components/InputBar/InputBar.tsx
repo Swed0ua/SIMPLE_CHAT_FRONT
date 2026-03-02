@@ -29,10 +29,11 @@ export default function InputBar({
   const { theme } = useTheme();
   const inset = useSafeAreaInsets();
   const styles = getStyles({ theme, insets: inset });
-  const canSubmit = !disabled && value.trim().length > 0;
+  const canSubmit = !disabled && value && value.trim().length > 0;
   const handleSubmit = useCallback(() => {
+    if (!value || !canSubmit) return;
     const trimmedText = value.trim();
-    if (!trimmedText || !canSubmit) return;
+    if (!trimmedText) return;
     onSubmit(trimmedText);
   }, [value, onSubmit, canSubmit]);
   return (

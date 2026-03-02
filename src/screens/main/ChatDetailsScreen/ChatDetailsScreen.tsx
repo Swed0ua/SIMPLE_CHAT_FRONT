@@ -7,6 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
+  sendMessage,
+  setDraft,
 } from '../../../store/slices/messagesSlice';
 import { useTheme } from '../../../context/ThemeContext';
 import ChatBubble from '../../../components/ChatBubble/ChatBubble';
@@ -17,6 +19,7 @@ import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDet
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
 import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFooter';
+import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRow';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -43,13 +46,26 @@ export default function ChatDetailsScreen({
   const loadingMore = useAppSelector(
     s => s.messages.loadingMoreByChatId[chatId],
   );
+  const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
+  const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
 
-  const [inputValue, setInputValue] = useState('');
+  const handleSubmit = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      dispatch(sendMessage({ chatId, text: trimmed }))
+        .unwrap()
+        .catch(() => {});
+    },
+    [chatId, dispatch],
+  );
 
-  const handleSubmit = useCallback((text: string) => {
-    console.log('ChatDetailsScreen handleSubmit', text);
-    setInputValue('');
-  }, []);
+  const handleChangeText = useCallback(
+    (text: string) => {
+      dispatch(setDraft({ chatId, text }));
+    },
+    [chatId, dispatch],
+  );
 
   const handleEndReached = useCallback(() => {
     dispatch(loadMoreMessages(chatId));
@@ -114,18 +130,25 @@ export default function ChatDetailsScreen({
               ListFooterComponent={() => listFooter}
               ListHeaderComponent={() => listHeader}
               renderItem={({ item, index }) => (
-                <ChatBubble
+                // <ChatBubble
+                //   message={item}
+                //   currentUserId={'u1'}
+                //   isInMessagesGroup={isInMessagesGroup(index)}
+                // />
+                <ChatMessageRow
                   message={item}
+                  index={index}
+                  messages={messages}
+                  chatType={chatType}
                   currentUserId={'u1'}
-                  isInMessagesGroup={isInMessagesGroup(index)}
                 />
               )}
             />
           )}
           <StickyInputFooter bottomInset={insets.bottom}>
             <InputBar
-              value={inputValue}
-              onChangeText={setInputValue}
+              value={draft}
+              onChangeText={handleChangeText}
               onSubmit={handleSubmit}
             />
           </StickyInputFooter>

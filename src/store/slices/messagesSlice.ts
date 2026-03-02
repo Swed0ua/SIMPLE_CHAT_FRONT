@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { MOCK_MESSAGES } from '../../mocks/mockMessages';
 import { MESSAGES_CONFIG } from '../../config/mesages';
@@ -14,6 +14,8 @@ export interface Message {
 }
 
 export interface MessagesState {
+  sendingByChatId: Record<string, boolean>;
+  draftByChatId: Record<string, string>;
   byChatId: Record<string, Message[]>;
   chatTypes: Record<string, ChatType>;
   loadingByChatId: Record<string, boolean>;
@@ -22,12 +24,16 @@ export interface MessagesState {
   hasMoreByChatId: Record<string, boolean>;
 }
 
+type SendMessagePayload = { chatId: string; text: string };
+
 type FetchMessagesPayload = {
   chatId: string;
   cursor?: { id: string; createdAt: string } | null;
 };
 
 const initialState: MessagesState = {
+  sendingByChatId: {},
+  draftByChatId: {},
   byChatId: {},
   chatTypes: {},
   loadingByChatId: {},
@@ -87,10 +93,38 @@ export const loadMoreMessages = createAsyncThunk<
   ).unwrap();
 });
 
+export const sendMessage = createAsyncThunk<
+  Message,
+  SendMessagePayload,
+  { state: RootState; rejectValue: string }
+>(
+  'messages/sendMessage',
+  async ({ chatId, text }: SendMessagePayload, { getState }) => {
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    const userId = getState().auth.user?.id ?? 'u1';
+    const message: Message = {
+      id: `temp-${Date.now()}`,
+      chatId,
+      senderId: userId,
+      text: text.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    return message;
+  },
+);
+
 const messagesSlice = createSlice({
   name: 'messages',
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    setDraft: (
+      state,
+      action: PayloadAction<{ chatId: string; text: string }>,
+    ) => {
+      const { chatId, text } = action.payload;
+      state.draftByChatId[chatId] = text;
+    },
+  },
   extraReducers: builder => {
     builder
       .addCase(fetchMessagesByChatId.pending, (state, action) => {
@@ -127,8 +161,22 @@ const messagesSlice = createSlice({
         state.loadingMoreByChatId[chatId] = false;
 
         state.errorByChatId[chatId] = action.payload ?? 'Failed to load chats';
+      })
+      .addCase(sendMessage.pending, (state, action) => {
+        state.sendingByChatId[action.meta.arg.chatId] = true;
+      })
+      .addCase(sendMessage.fulfilled, (state, action) => {
+        const chatId = action.meta.arg.chatId;
+        state.sendingByChatId[chatId] = false;
+        state.draftByChatId[chatId] = '';
+        const list = state.byChatId[chatId] ?? [];
+        state.byChatId[chatId] = [action.payload, ...list];
+      })
+      .addCase(sendMessage.rejected, (state, action) => {
+        state.sendingByChatId[action.meta.arg.chatId] = false;
       });
   },
 });
 
+export const { setDraft } = messagesSlice.actions;
 export default messagesSlice.reducer;
