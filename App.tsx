@@ -1,14 +1,5 @@
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { StatusBar, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { store } from './src/store/store';
 import { ThemeProvider } from './src/context/ThemeContext';
@@ -16,6 +7,7 @@ import { LanguageProvider } from './src/context/LanguageContext';
 import { ProtectedRoute } from './src/components/ProtectedRoute';
 import { NavigationContainer } from '@react-navigation/native';
 import LoadingOverlay from './src/components/LoadingOvarlay';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -23,46 +15,22 @@ function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <LanguageProvider>
-            <StatusBar
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            />
-            <NavigationContainer>
-              <ProtectedRoute />
-            </NavigationContainer>
-            <LoadingOverlay />
-          </LanguageProvider>
-        </ThemeProvider>
+        <KeyboardProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+              />
+              <NavigationContainer>
+                <ProtectedRoute />
+              </NavigationContainer>
+              <LoadingOverlay />
+            </LanguageProvider>
+          </ThemeProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </Provider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: safeAreaInsets.top,
-          paddingBottom: safeAreaInsets.bottom,
-          paddingLeft: safeAreaInsets.left,
-          paddingRight: safeAreaInsets.right,
-        },
-      ]}
-    >
-      <Text>Hello world</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

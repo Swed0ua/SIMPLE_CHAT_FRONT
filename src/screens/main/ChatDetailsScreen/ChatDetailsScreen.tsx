@@ -1,20 +1,10 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {
-  View,
-  Text,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  Animated,
-  Easing,
-} from 'react-native';
+import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -57,8 +47,6 @@ export default function ChatDetailsScreen({
   const error = useAppSelector(s => s.messages.errorByChatId[chatId]);
 
   const [inputValue, setInputValue] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const keyboardTranslateY = useRef(new Animated.Value(0)).current;
 
   const handleSubmit = useCallback((text: string) => {
     console.log('ChatDetailsScreen handleSubmit', text);
@@ -120,30 +108,6 @@ export default function ChatDetailsScreen({
     dispatch(fetchMessagesByChatId({ chatId }));
   }, [chatId, dispatch]);
 
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', e => {
-      const height = e.endCoordinates.height;
-      Animated.timing(keyboardTranslateY, {
-        toValue: -height,
-        duration: e.duration ?? 250,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
-    const hide = Keyboard.addListener('keyboardDidHide', e => {
-      Animated.timing(keyboardTranslateY, {
-        toValue: 0,
-        duration: e.duration ?? 250,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, [keyboardTranslateY]);
-
   return (
     <View style={styles.container}>
       <Text>Hello world</Text>
@@ -177,15 +141,13 @@ export default function ChatDetailsScreen({
               )}
             />
           )}
-          <Animated.View
-            style={{ transform: [{ translateY: keyboardTranslateY }] }}
-          >
+          <KeyboardStickyView>
             <InputBar
               value={inputValue}
               onChangeText={setInputValue}
               onSubmit={handleSubmit}
             />
-          </Animated.View>
+          </KeyboardStickyView>
         </View>
       </View>
     </View>
