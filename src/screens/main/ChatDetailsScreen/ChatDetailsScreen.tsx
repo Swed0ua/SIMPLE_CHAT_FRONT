@@ -4,7 +4,6 @@ import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -17,8 +16,7 @@ import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
-import { useKeyboardHeight } from '../../../hooks/useKeyboardHeight';
-import { KeyboardSpacer } from '../../../components/KeyboardSpacer';
+import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFooter';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -47,7 +45,6 @@ export default function ChatDetailsScreen({
   );
 
   const [inputValue, setInputValue] = useState('');
-  const keyboardHeight = useKeyboardHeight();
 
   const handleSubmit = useCallback((text: string) => {
     console.log('ChatDetailsScreen handleSubmit', text);
@@ -125,19 +122,13 @@ export default function ChatDetailsScreen({
               )}
             />
           )}
-          <KeyboardSpacer height={keyboardHeight} bottomInset={insets.bottom} />
-          <KeyboardStickyView
-            offset={{
-              closed: 0,
-              opened: insets.bottom,
-            }}
-          >
+          <StickyInputFooter bottomInset={insets.bottom}>
             <InputBar
               value={inputValue}
               onChangeText={setInputValue}
               onSubmit={handleSubmit}
             />
-          </KeyboardStickyView>
+          </StickyInputFooter>
         </View>
       </View>
     </View>
