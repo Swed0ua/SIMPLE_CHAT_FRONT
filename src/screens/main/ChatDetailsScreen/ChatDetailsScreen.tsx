@@ -5,11 +5,16 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  Animated,
+  Easing,
 } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -21,6 +26,7 @@ import { getStyles } from './ChatDetailsScreen.styles';
 import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
 import { ChatType } from '../../../types/chat';
+import InputBar from '../../../components/InputBar/InputBar';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -50,13 +56,14 @@ export default function ChatDetailsScreen({
   );
   const error = useAppSelector(s => s.messages.errorByChatId[chatId]);
 
-  // TODO: remove this
-  // console.log('----------start-----------------');
-  // console.log('ChatDetailsScreen', chatId);
-  // console.log('messages', messages);
-  // console.log('loading', loading);
-  // console.log('error', error);
-  // console.log('-------------end----------------');
+  const [inputValue, setInputValue] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardTranslateY = useRef(new Animated.Value(0)).current;
+
+  const handleSubmit = useCallback((text: string) => {
+    console.log('ChatDetailsScreen handleSubmit', text);
+    setInputValue('');
+  }, []);
 
   const handleEndReached = useCallback(() => {
     dispatch(loadMoreMessages(chatId));
@@ -113,38 +120,73 @@ export default function ChatDetailsScreen({
     dispatch(fetchMessagesByChatId({ chatId }));
   }, [chatId, dispatch]);
 
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', e => {
+      const height = e.endCoordinates.height;
+      Animated.timing(keyboardTranslateY, {
+        toValue: -height,
+        duration: e.duration ?? 250,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', e => {
+      Animated.timing(keyboardTranslateY, {
+        toValue: 0,
+        duration: e.duration ?? 250,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [keyboardTranslateY]);
+
   return (
     <View style={styles.container}>
       <Text>Hello world</Text>
       <Text>Chat Details {chatId}</Text>
-      <View style={{ flex: 1, overflow: 'hidden' }}>
-        {loading ? (
-          <ChatDetailsSkeleton
-            variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
-          />
-        ) : (
-          <FlatList
-            data={messages}
-            keyExtractor={item => item.id}
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.3}
-            // onScroll={handleScroll}
-            scrollEventThrottle={16}
-            inverted={true}
-            style={styles.listContainer}
-            ListFooterComponent={() => listFooter}
-            ListHeaderComponent={() => (
-              <View style={styles.listBottomContainer} />
-            )}
-            renderItem={({ item, index }) => (
-              <ChatBubble
-                message={item}
-                currentUserId={'u1'}
-                isInMessagesGroup={isInMessagesGroup(index)}
-              />
-            )}
-          />
-        )}
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, overflow: 'hidden' }}>
+          {loading ? (
+            <ChatDetailsSkeleton
+              variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
+            />
+          ) : (
+            <FlatList
+              data={messages}
+              keyExtractor={item => item.id}
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.3}
+              // onScroll={handleScroll}
+              scrollEventThrottle={16}
+              inverted={true}
+              style={styles.listContainer}
+              ListFooterComponent={() => listFooter}
+              ListHeaderComponent={() => (
+                <View style={styles.listBottomContainer} />
+              )}
+              renderItem={({ item, index }) => (
+                <ChatBubble
+                  message={item}
+                  currentUserId={'u1'}
+                  isInMessagesGroup={isInMessagesGroup(index)}
+                />
+              )}
+            />
+          )}
+          <Animated.View
+            style={{ transform: [{ translateY: keyboardTranslateY }] }}
+          >
+            <InputBar
+              value={inputValue}
+              onChangeText={setInputValue}
+              onSubmit={handleSubmit}
+            />
+          </Animated.View>
+        </View>
       </View>
     </View>
   );

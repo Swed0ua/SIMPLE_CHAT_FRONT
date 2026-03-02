@@ -3,6 +3,7 @@ import { useWindowDimensions, View } from 'react-native';
 import ShimmerSkeletonGroup from '../ShimmerSkeleton/ShimmerSkeletonGroup';
 import { ChatDetailsSkeletonProps } from './ChatDetailsSkeleton.types';
 import { LAYOUT_BUILDERS } from './ChatDetailsSkeleton.layouts';
+import { useTheme } from '../../context/ThemeContext';
 
 const DEFAULT_VARIANT = 'multiple' as const;
 
@@ -10,6 +11,7 @@ export default function ChatDetailsSkeleton({
   variant = DEFAULT_VARIANT,
 }: ChatDetailsSkeletonProps) {
   const { width, height } = useWindowDimensions();
+  const { theme } = useTheme();
 
   const { shapes, metadata } = useMemo(
     () => LAYOUT_BUILDERS[variant]({ width, height }),
@@ -18,7 +20,14 @@ export default function ChatDetailsSkeleton({
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
-      <View style={{ position: 'absolute', bottom: 0, left: 0 }}>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          paddingBottom: theme.spacing.lg / 2,
+        }}
+      >
         <ShimmerSkeletonGroup
           width={metadata.width}
           height={metadata.height}
