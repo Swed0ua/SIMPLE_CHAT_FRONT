@@ -4,7 +4,10 @@ import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import {
+  KeyboardStickyView,
+  useKeyboardHandler,
+} from 'react-native-keyboard-controller';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -17,6 +20,7 @@ import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
+import { runOnJS } from 'react-native-worklets';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -47,6 +51,7 @@ export default function ChatDetailsScreen({
   const error = useAppSelector(s => s.messages.errorByChatId[chatId]);
 
   const [inputValue, setInputValue] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const handleSubmit = useCallback((text: string) => {
     console.log('ChatDetailsScreen handleSubmit', text);
@@ -87,6 +92,17 @@ export default function ChatDetailsScreen({
       ) : null,
     [loadingMore],
   );
+
+  useKeyboardHandler({
+    onMove: e => {
+      'worklet';
+      runOnJS(setKeyboardHeight)(e.height);
+    },
+    onEnd: e => {
+      'worklet';
+      runOnJS(setKeyboardHeight)(e.height);
+    },
+  });
 
   // const handleScroll = useCallback(
   //   (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -130,7 +146,9 @@ export default function ChatDetailsScreen({
               style={styles.listContainer}
               ListFooterComponent={() => listFooter}
               ListHeaderComponent={() => (
-                <View style={styles.listBottomContainer} />
+                <>
+                  <View style={styles.listBottomContainer} />
+                </>
               )}
               renderItem={({ item, index }) => (
                 <ChatBubble
@@ -141,7 +159,18 @@ export default function ChatDetailsScreen({
               )}
             />
           )}
-          <KeyboardStickyView>
+          <View
+            style={{
+              height: keyboardHeight - (insets.bottom ?? 0),
+              backgroundColor: 'blue',
+            }}
+          />
+          <KeyboardStickyView
+            offset={{
+              closed: 0,
+              opened: insets.bottom,
+            }}
+          >
             <InputBar
               value={inputValue}
               onChangeText={setInputValue}

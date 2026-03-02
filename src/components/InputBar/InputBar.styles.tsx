@@ -9,7 +9,7 @@ export const getStyles = ({
   insets: Insets;
 }) => {
   const { spacing, borderRadius } = theme;
-  const paddingBottom = Math.max(insets.bottom ?? 0, spacing.sm);
+  const paddingBottom = (insets.bottom ?? 0) + spacing.sm;
 
   return StyleSheet.create({
     container: {
