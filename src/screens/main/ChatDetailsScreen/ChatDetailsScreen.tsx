@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, FlatList, ActivityIndicator } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
@@ -17,8 +17,8 @@ import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
-import { runOnJS } from 'react-native-worklets';
 import { useKeyboardHeight } from '../../../hooks/useKeyboardHeight';
+import { KeyboardSpacer } from '../../../components/KeyboardSpacer';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -41,12 +41,10 @@ export default function ChatDetailsScreen({
     useAppSelector(s => s.chat.list.find(c => c.id === chatId)?.type) ??
     ChatType.DIRECT;
   const messages = useAppSelector(s => s.messages.byChatId[chatId]);
-  const cuurentUserId = useAppSelector(s => s.auth.user?.id);
   const loading = useAppSelector(s => s.messages.loadingByChatId[chatId]);
   const loadingMore = useAppSelector(
     s => s.messages.loadingMoreByChatId[chatId],
   );
-  const error = useAppSelector(s => s.messages.errorByChatId[chatId]);
 
   const [inputValue, setInputValue] = useState('');
   const keyboardHeight = useKeyboardHeight();
@@ -91,21 +89,9 @@ export default function ChatDetailsScreen({
     [loadingMore],
   );
 
-  // const handleScroll = useCallback(
-  //   (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-  //     const y = e.nativeEvent.contentOffset.y;
-  //     const nearTop = y <= MESSAGES_CONFIG.scrollToBottomChatThreshold;
-  //     if (nearTop) {
-  //       if (!loadMoreTriggeredRef.current && !loading) {
-  //         loadMoreTriggeredRef.current = true;
-  //         handleEndReached();
-  //       }
-  //     } else {
-  //       loadMoreTriggeredRef.current = false;
-  //     }
-  //   },
-  //   [handleEndReached, loading],
-  // );
+  const listHeader = useMemo(() => {
+    return <View style={styles.listBottomContainer} />;
+  }, [styles.listBottomContainer]);
 
   useEffect(() => {
     dispatch(fetchMessagesByChatId({ chatId }));
@@ -125,16 +111,11 @@ export default function ChatDetailsScreen({
               keyExtractor={item => item.id}
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.3}
-              // onScroll={handleScroll}
               scrollEventThrottle={16}
               inverted={true}
               style={styles.listContainer}
               ListFooterComponent={() => listFooter}
-              ListHeaderComponent={() => (
-                <>
-                  <View style={styles.listBottomContainer} />
-                </>
-              )}
+              ListHeaderComponent={() => listHeader}
               renderItem={({ item, index }) => (
                 <ChatBubble
                   message={item}
@@ -144,12 +125,7 @@ export default function ChatDetailsScreen({
               )}
             />
           )}
-          <View
-            style={{
-              height: keyboardHeight - (insets.bottom ?? 0),
-              backgroundColor: 'blue',
-            }}
-          />
+          <KeyboardSpacer height={keyboardHeight} bottomInset={insets.bottom} />
           <KeyboardStickyView
             offset={{
               closed: 0,
