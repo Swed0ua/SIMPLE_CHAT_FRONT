@@ -4,10 +4,7 @@ import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  KeyboardStickyView,
-  useKeyboardHandler,
-} from 'react-native-keyboard-controller';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -21,6 +18,7 @@ import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDet
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
 import { runOnJS } from 'react-native-worklets';
+import { useKeyboardHeight } from '../../../hooks/useKeyboardHeight';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -51,7 +49,7 @@ export default function ChatDetailsScreen({
   const error = useAppSelector(s => s.messages.errorByChatId[chatId]);
 
   const [inputValue, setInputValue] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
 
   const handleSubmit = useCallback((text: string) => {
     console.log('ChatDetailsScreen handleSubmit', text);
@@ -93,17 +91,6 @@ export default function ChatDetailsScreen({
     [loadingMore],
   );
 
-  useKeyboardHandler({
-    onMove: e => {
-      'worklet';
-      runOnJS(setKeyboardHeight)(e.height);
-    },
-    onEnd: e => {
-      'worklet';
-      runOnJS(setKeyboardHeight)(e.height);
-    },
-  });
-
   // const handleScroll = useCallback(
   //   (e: NativeSyntheticEvent<NativeScrollEvent>) => {
   //     const y = e.nativeEvent.contentOffset.y;
@@ -126,8 +113,6 @@ export default function ChatDetailsScreen({
 
   return (
     <View style={styles.container}>
-      <Text>Hello world</Text>
-      <Text>Chat Details {chatId}</Text>
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1, overflow: 'hidden' }}>
           {loading ? (

@@ -17,7 +17,6 @@ export const getStyles = ({
       paddingHorizontal: spacing.sm,
     },
     listBottomContainer: {
-      backgroundColor: 'red',
       // paddingBottom: (insets.bottom ?? 0) + spacing.lg,
       paddingBottom: spacing.lg,
     },
