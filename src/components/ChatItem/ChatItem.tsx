@@ -7,6 +7,7 @@ import { Chat } from '../../store/slices/chatSlice';
 import { useTheme } from '../../context/ThemeContext';
 import { truncateForDisplay } from '../../utils/textFormating';
 import { formatChatTime } from '../../utils/timeFormating';
+import { Avatar } from '../Avatar';
 
 type ChatItemProps = {
   chatItem: Chat;
@@ -19,11 +20,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
   const styles = useMemo(() => getStyle({ theme: theme.theme }), [theme.theme]);
   const userSymbol = chatItem.title.charAt(0).toUpperCase();
   const renderChatItemAvatar = useCallback(() => {
-    return (
-      <View style={styles.chatItemAvatar}>
-        <Text>{userSymbol}</Text>
-      </View>
-    );
+    return <Avatar uri={chatItem.avatarUrl} name={userSymbol} />;
   }, [styles.chatItemAvatar, userSymbol]);
 
   const truncatedLastMessage = truncateForDisplay(
