@@ -39,6 +39,7 @@ export default function InputBar({
   return (
     <View style={[styles.container, style]}>
       <TextInput
+        key={value === '' ? 'empty' : 'filled'}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
