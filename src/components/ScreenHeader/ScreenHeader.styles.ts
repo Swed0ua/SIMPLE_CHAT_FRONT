@@ -8,13 +8,16 @@ export const getStyles = ({
   theme: Theme;
   insets: Insets;
 }) => {
+  const paddingLeft = (insets.left ?? 0) + theme.spacing.sm;
+  const paddingRight = (insets.right ?? 0) + theme.spacing.sm;
   return StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingTop: insets.top,
       paddingBottom: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.sm,
+      paddingLeft,
+      paddingRight,
       gap: theme.spacing.sm,
       backgroundColor: theme.colors.background.secondary,
       borderBottomWidth: StyleSheet.hairlineWidth,

@@ -10,13 +10,16 @@ export const getStyles = ({
 }) => {
   const { spacing, borderRadius } = theme;
   const paddingBottom = (insets.bottom ?? 0) + spacing.sm;
+  const paddingLeft = (insets.left ?? 0) + spacing.sm;
+  const paddingRight = (insets.right ?? 0) + spacing.sm;
 
   return StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       gap: spacing.sm,
-      paddingHorizontal: spacing.md,
+      paddingLeft,
+      paddingRight,
       paddingTop: spacing.sm,
       paddingBottom,
       backgroundColor: theme.colors.background.secondary,

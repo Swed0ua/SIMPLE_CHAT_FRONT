@@ -14,10 +14,10 @@ export const getStyles = ({
       flex: 1,
     },
     listContainer: {
-      paddingHorizontal: spacing.sm,
+      paddingLeft: spacing.sm + (insets.left ?? 0),
+      paddingRight: spacing.sm + (insets.right ?? 0),
     },
     listBottomContainer: {
-      // paddingBottom: (insets.bottom ?? 0) + spacing.lg,
       paddingBottom: spacing.lg,
     },
   });
