@@ -14,7 +14,7 @@ export function AppGateWithAuth({ children }: AppGateWithAuthProps) {
 
   return (
     <AppGate
-      ready={{ auth: !isAuthLoading }}
+      ready={{ auth: isAuthLoading }}
       placeholder={<LoadingPlaceholder />}
     >
       {children ?? <></>}

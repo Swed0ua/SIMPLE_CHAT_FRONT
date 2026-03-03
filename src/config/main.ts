@@ -1,3 +1,5 @@
+import pkg from '../../package.json';
+
 export const mainConfig = {
   SHIMMER_BAND_WIDTH: 120,
   SKELETON_FACTORY_GAP: 10,
@@ -8,3 +10,6 @@ export const mainConfig = {
 
   BACK_BUTTON_DEFAULT_HIT_SLOP: 8,
 };
+
+export const APP_NAME = pkg.name;
+export const APP_VERSION = pkg.version;
