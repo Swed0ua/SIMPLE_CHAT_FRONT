@@ -8,27 +8,30 @@ import { ProtectedRoute } from './src/components/ProtectedRoute';
 import { NavigationContainer } from '@react-navigation/native';
 import LoadingOverlay from './src/components/LoadingOvarlay';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import AppGateWithDeps from './src/screens/bootstrap/AppGate/AppGateWithDeps';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <Provider store={store}>
-      <SafeAreaProvider>
-        <KeyboardProvider>
-          <ThemeProvider>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <KeyboardProvider>
             <LanguageProvider>
               <StatusBar
                 barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               />
+
               <NavigationContainer>
                 <ProtectedRoute />
               </NavigationContainer>
               <LoadingOverlay />
             </LanguageProvider>
-          </ThemeProvider>
-        </KeyboardProvider>
-      </SafeAreaProvider>
+          </KeyboardProvider>
+        </SafeAreaProvider>
+        <AppGateWithDeps />
+      </ThemeProvider>
     </Provider>
   );
 }

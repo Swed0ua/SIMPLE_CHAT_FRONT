@@ -21,7 +21,7 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
   const userSymbol = chatItem.title.charAt(0).toUpperCase();
   const renderChatItemAvatar = useCallback(() => {
     return <Avatar uri={chatItem.avatarUrl} name={userSymbol} />;
-  }, [styles.chatItemAvatar, userSymbol]);
+  }, [chatItem.avatarUrl, userSymbol]);
 
   const truncatedLastMessage = truncateForDisplay(
     chatItem?.lastMessage ?? t('chatItem.noMessages'),
