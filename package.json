@@ -24,6 +24,7 @@
     "@tabler/icons-react-native": "^3.36.1",
     "date-fns": "^4.1.0",
     "i18next": "^25.7.3",
+    "lottie-react-native": "^7.3.6",
     "react": "19.2.0",
     "react-i18next": "^16.5.0",
     "react-native": "0.83.0",

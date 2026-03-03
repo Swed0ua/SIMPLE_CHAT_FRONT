@@ -6,6 +6,7 @@ import {
   useWindowDimensions,
   Text,
 } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { useTheme } from '../../../context/ThemeContext';
 import { APP_NAME, APP_VERSION } from '../../../config/main';
 
@@ -29,8 +30,18 @@ export function LoadingPlaceholder() {
         },
       ]}
     >
-      <ActivityIndicator size="large" color={theme.colors.primary[50]} />
+      <LottieView
+        autoPlay
+        loop
+        source={require('../../../assets/animations/Loading_Lottie_Animation.json')}
+        style={{ width: 140, height: 140 }}
+      />
       <View style={styles.footer}>
+        <ActivityIndicator
+          size="small"
+          color={theme.colors.primary[200]}
+          style={{ marginBottom: 10 }}
+        />
         <Text style={[styles.footerText, { color: theme.colors.primary[200] }]}>
           {APP_NAME}
         </Text>

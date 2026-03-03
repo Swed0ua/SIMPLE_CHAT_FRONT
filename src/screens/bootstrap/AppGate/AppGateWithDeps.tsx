@@ -10,11 +10,9 @@ type AppGateWithAuthProps = {
 export function AppGateWithAuth({ children }: AppGateWithAuthProps) {
   const isAuthLoading = useAppSelector(s => s.auth.isAuthLoading);
 
-  console.log('isAuthLoading', isAuthLoading);
-
   return (
     <AppGate
-      ready={{ auth: isAuthLoading }}
+      ready={{ auth: !isAuthLoading }}
       placeholder={<LoadingPlaceholder />}
     >
       {children ?? <></>}
