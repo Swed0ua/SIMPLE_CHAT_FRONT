@@ -13,7 +13,7 @@ export function MainNavigation() {
       <MainStack.Screen
         name={ROUTES.ChatDetails}
         component={ChatDetailsScreen}
-        options={{ headerShown: true, title: 'Chat Details' }}
+        options={{ headerShown: false, title: 'Chat Details' }}
       />
     </MainStack.Navigator>
   );

@@ -11,15 +11,14 @@ import {
   setDraft,
 } from '../../../store/slices/messagesSlice';
 import { useTheme } from '../../../context/ThemeContext';
-import ChatBubble from '../../../components/ChatBubble/ChatBubble';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getStyles } from './ChatDetailsScreen.styles';
-import { IsInMessagesGroupInterface } from './ChatDetailsScreen.types';
 import ChatDetailsSkeleton from '../../../components/ChatDetailsSkeleton/ChatDetailsSkeleton';
 import { ChatType } from '../../../types/chat';
 import InputBar from '../../../components/InputBar/InputBar';
 import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFooter';
 import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRow';
+import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -91,6 +90,11 @@ export default function ChatDetailsScreen({
 
   return (
     <View style={styles.container}>
+      <ScreenHeader
+        onBackPress={() => _navigation.goBack()}
+        title="Chat Details"
+        subtitle="Chat Details"
+      />
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1, overflow: 'hidden' }}>
           {loading ? (
