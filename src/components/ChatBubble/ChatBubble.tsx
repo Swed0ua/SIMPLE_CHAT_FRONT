@@ -10,6 +10,7 @@ import {
   CHAT_BUBBLE_AVATAR_SIZE,
   CHAT_BUBBLE_VARIANT,
 } from './chatBubbleConfig';
+import { Avatar } from '../Avatar';
 
 export interface ChatBubbleProps {
   message: Message;
@@ -49,7 +50,8 @@ function ChatBubble({
 
   function renderAvatar() {
     if (!showAvatar) return null;
-    return <View style={styles.avatarCircle} />;
+    // return <View style={styles.avatarCircle} />;
+    return <Avatar name={'Test'} size={avatarSize} />;
   }
 
   function renderTitle() {

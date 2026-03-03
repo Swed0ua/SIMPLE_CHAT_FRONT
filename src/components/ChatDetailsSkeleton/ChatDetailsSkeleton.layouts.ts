@@ -1,5 +1,6 @@
 import { MESSAGES_CONFIG } from '../../config/mesages';
 import { randomNumber } from '../../utils/numsFormating';
+import { CHAT_BUBBLE_AVATAR_SIZE } from '../ChatBubble/chatBubbleConfig';
 import {
   renderCircle,
   renderRound,
@@ -51,7 +52,10 @@ export const buildMultipleLayout: ChatDetailsLayoutBuilder = ({
     }
     const randomComponentWidth = randomNumber(messageWidth * 0.8, messageWidth);
     return skeletonRow(
-      [renderCircle(), createMessageBubbleBlock(randomComponentWidth)],
+      [
+        renderCircle({ r: CHAT_BUBBLE_AVATAR_SIZE / 2 }),
+        createMessageBubbleBlock(randomComponentWidth),
+      ],
       {
         gap: MESSAGE_GAP_X,
         alignItems: 'end',

@@ -19,4 +19,4 @@ export const CHAT_BUBBLE_VARIANT: Record<ChatType, ChatBubbleVariant> = {
   },
 };
 
-export const CHAT_BUBBLE_AVATAR_SIZE = 38;
+export const CHAT_BUBBLE_AVATAR_SIZE = 44;

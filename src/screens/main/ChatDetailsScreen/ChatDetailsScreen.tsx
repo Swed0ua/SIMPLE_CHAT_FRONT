@@ -71,27 +71,6 @@ export default function ChatDetailsScreen({
     dispatch(loadMoreMessages(chatId));
   }, [chatId, dispatch]);
 
-  const isInMessagesGroup = (index: number): IsInMessagesGroupInterface => {
-    const inMessagesGroup: IsInMessagesGroupInterface = {
-      isFirst: true,
-      isLast: true,
-    };
-    const list = messages ?? [];
-    const current = list[index];
-    if (!current) return inMessagesGroup;
-
-    if (
-      index < list.length - 1 &&
-      current.senderId === list[index + 1]?.senderId
-    ) {
-      inMessagesGroup.isFirst = false;
-    }
-    if (index > 0 && current.senderId === list[index - 1]?.senderId) {
-      inMessagesGroup.isLast = false;
-    }
-    return inMessagesGroup;
-  };
-
   const listFooter = useMemo(
     () =>
       loadingMore ? (
@@ -130,11 +109,6 @@ export default function ChatDetailsScreen({
               ListFooterComponent={() => listFooter}
               ListHeaderComponent={() => listHeader}
               renderItem={({ item, index }) => (
-                // <ChatBubble
-                //   message={item}
-                //   currentUserId={'u1'}
-                //   isInMessagesGroup={isInMessagesGroup(index)}
-                // />
                 <ChatMessageRow
                   message={item}
                   index={index}
