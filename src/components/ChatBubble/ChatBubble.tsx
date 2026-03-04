@@ -50,7 +50,6 @@ function ChatBubble({
 
   function renderAvatar() {
     if (!showAvatar) return null;
-    // return <View style={styles.avatarCircle} />;
     return <Avatar name={'Test'} size={avatarSize} />;
   }
 

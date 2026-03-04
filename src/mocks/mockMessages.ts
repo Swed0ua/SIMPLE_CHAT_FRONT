@@ -52,6 +52,14 @@ export const MOCK_MESSAGES: MockMessageItem[] = Array.from(
       isSystemMessage: isSystemMessage ? true : false,
       text: isSystemMessage ? 'System message ' : TEXTS[index % TEXTS.length],
       createdAt: new Date(now - (100 - index) * HOUR).toISOString(),
+      systemMessageData: isSystemMessage
+        ? {
+            type: 'AddedMember',
+            memberId: 'u10',
+            memberName: 'User 111',
+            addedByUserId: 'u11',
+          }
+        : undefined,
     };
   },
 ).reverse();
