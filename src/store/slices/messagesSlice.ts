@@ -11,7 +11,31 @@ export interface Message {
   text: string;
   createdAt: string;
   deletedAt?: string | null;
+  isSystemMessage?: boolean;
+  systemMessageData?: SystemMessageData;
 }
+
+export type SystemMessageType =
+  | 'CreatedRoom'
+  | 'AddedMember'
+  | 'RemoveMember'
+  | 'Other';
+
+export type SystemMessageData =
+  | { type: 'CreatedRoom'; roomName?: string; createdByUserId?: string }
+  | {
+      type: 'AddedMember';
+      memberId: string;
+      memberName?: string;
+      addedByUserId?: string;
+    }
+  | {
+      type: 'RemoveMember';
+      memberId: string;
+      memberName?: string;
+      removedByUserId?: string;
+    }
+  | { type: 'Other' };
 
 export interface MessagesState {
   sendingByChatId: Record<string, boolean>;
@@ -55,8 +79,6 @@ export const fetchMessagesByChatId = createAsyncThunk<
     console.log('fetchMessagesByChatId : ', chatId);
     await new Promise<void>(resolve => setTimeout(resolve, 5000));
     if (!cursor) {
-      console.log('mm : ', mockMessages);
-
       return mockMessages
         .slice(0, MESSAGES_CONFIG.initialLoadLimit)
         .map(m => ({ ...m, chatId }));
@@ -65,7 +87,6 @@ export const fetchMessagesByChatId = createAsyncThunk<
     const olderMessages = mockMessages.filter(m => {
       return new Date(m.createdAt).getTime() < cursorTime;
     });
-    console.log('===olderMessages : ', olderMessages.length);
     const chunk = olderMessages
       .slice(0, MESSAGES_CONFIG.loadMoreLimit)
       .map(m => ({ ...m, chatId }));

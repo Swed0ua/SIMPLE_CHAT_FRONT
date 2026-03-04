@@ -45,10 +45,12 @@ export const MOCK_MESSAGES: MockMessageItem[] = Array.from(
   { length: 100 },
   (_, i) => {
     const index = i + 1;
+    const isSystemMessage = index % 7 === 0;
     return {
       id: `m${index}`,
       senderId: index % 3 === 0 ? 'u1' : 'u2',
-      text: TEXTS[index % TEXTS.length],
+      isSystemMessage: isSystemMessage ? true : false,
+      text: isSystemMessage ? 'System message ' : TEXTS[index % TEXTS.length],
       createdAt: new Date(now - (100 - index) * HOUR).toISOString(),
     };
   },

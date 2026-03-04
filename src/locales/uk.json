@@ -5,5 +5,13 @@
   },
   "time": {
     "yesterday": "Вчора"
+  },
+  "systemMessage": {
+    "createdRoom": "Чат створено",
+    "createdRoomWithName": "Чат «{{name}}» створено",
+    "addedMember": "Учасника додано",
+    "addedMemberWithName": "{{name}} приєднався",
+    "removedMember": "Учасник вийшов",
+    "removedMemberWithName": "{{name}} вийшов"
   }
 }

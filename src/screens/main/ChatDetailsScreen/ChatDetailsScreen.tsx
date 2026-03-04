@@ -19,6 +19,7 @@ import InputBar from '../../../components/InputBar/InputBar';
 import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFooter';
 import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRow';
 import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
+import { SystemMessageRow } from '../../../components/ChatMessageRow/SystemMessageRow';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -112,15 +113,19 @@ export default function ChatDetailsScreen({
               style={styles.listContainer}
               ListFooterComponent={() => listFooter}
               ListHeaderComponent={() => listHeader}
-              renderItem={({ item, index }) => (
-                <ChatMessageRow
-                  message={item}
-                  index={index}
-                  messages={messages}
-                  chatType={chatType}
-                  currentUserId={'u1'}
-                />
-              )}
+              renderItem={({ item, index }) =>
+                item.isSystemMessage ? (
+                  <SystemMessageRow message={item} />
+                ) : (
+                  <ChatMessageRow
+                    message={item}
+                    index={index}
+                    messages={messages}
+                    chatType={chatType}
+                    currentUserId={'u1'}
+                  />
+                )
+              }
             />
           )}
           <StickyInputFooter bottomInset={insets.bottom}>

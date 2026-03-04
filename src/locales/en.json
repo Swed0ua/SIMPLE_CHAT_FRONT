@@ -5,5 +5,13 @@
   },
   "time": {
     "yesterday": "Yesterday"
+  },
+  "systemMessage": {
+    "createdRoom": "Chat created",
+    "createdRoomWithName": "Chat \"{{name}}\" created",
+    "addedMember": "A member was added",
+    "addedMemberWithName": "{{name}} joined",
+    "removedMember": "A member left",
+    "removedMemberWithName": "{{name}} left"
   }
 }
