@@ -48,6 +48,9 @@ export default function ChatDetailsScreen({
   );
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
+  const hasDisabledInput = useMemo(() => {
+    return !!sending || !!loading;
+  }, [sending, loading]);
 
   const handleSubmit = useCallback(
     (text: string) => {
@@ -133,6 +136,7 @@ export default function ChatDetailsScreen({
               value={draft}
               onChangeText={handleChangeText}
               onSubmit={handleSubmit}
+              disabled={hasDisabledInput}
             />
           </StickyInputFooter>
         </View>
