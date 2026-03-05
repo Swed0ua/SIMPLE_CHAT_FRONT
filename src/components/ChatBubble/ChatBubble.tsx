@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Message } from '../../store/slices/messagesSlice';
 import getStyles from './ChatBubble.styles';
@@ -11,6 +11,8 @@ import {
   CHAT_BUBBLE_VARIANT,
 } from './chatBubbleConfig';
 import { Avatar } from '../Avatar';
+import { Sticky } from '../Sticky/Sticky';
+import { StickyPusher } from '../Sticky/StickyPusher.tsx';
 
 export interface ChatBubbleProps {
   message: Message;
@@ -36,6 +38,8 @@ function ChatBubble({
   const isOwn = currentUserId ? message.senderId === currentUserId : false;
   const variant = CHAT_BUBBLE_VARIANT[chatType];
 
+  const pusherRef = useRef<View>(null);
+
   const hasOffsetForAvatar = variant.showAvatar && !isOwn;
   const showAvatar = hasOffsetForAvatar && isInMessagesGroup.isLast;
   const showSenderName = hasOffsetForAvatar && isInMessagesGroup.isFirst;
@@ -50,7 +54,11 @@ function ChatBubble({
 
   function renderAvatar() {
     if (!showAvatar) return null;
-    return <Avatar name={'Test'} size={avatarSize} />;
+    return (
+      <Sticky stickTo="bottom" pusherRef={pusherRef}>
+        <Avatar name={'Test'} size={avatarSize} />
+      </Sticky>
+    );
   }
 
   function renderTitle() {
@@ -77,10 +85,12 @@ function ChatBubble({
   return (
     <View style={wrapperStyle}>
       {renderAvatar()}
-      <View style={bubbleStyle}>
-        {renderTitle()}
-        {renderBubbleContent()}
-      </View>
+      <StickyPusher ref={pusherRef}>
+        <View style={bubbleStyle}>
+          {renderTitle()}
+          {renderBubbleContent()}
+        </View>
+      </StickyPusher>
     </View>
   );
 }

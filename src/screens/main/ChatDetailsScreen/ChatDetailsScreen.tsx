@@ -1,5 +1,10 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { View, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  useWindowDimensions,
+} from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
@@ -7,6 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
+  Message,
   sendMessage,
   setDraft,
 } from '../../../store/slices/messagesSlice';
@@ -20,11 +26,63 @@ import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFoot
 import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRow';
 import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
 import { SystemMessageRow } from '../../../components/ChatMessageRow/SystemMessageRow';
+import {
+  StickyScrollProvider,
+  useStickyScroll,
+} from '../../../context/StickyScrollContext';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
   typeof ROUTES.ChatDetails
 >;
+
+function ChatList({
+  messages,
+  chatType,
+  currentUserId,
+  handleEndReached,
+  styles,
+  listFooter,
+  listHeader,
+}: {
+  messages: Message[];
+  chatType: ChatType;
+  currentUserId: string;
+  handleEndReached: () => void;
+  styles: ReturnType<typeof getStyles>;
+  listFooter: React.ReactNode;
+  listHeader: React.ReactNode;
+}) {
+  const ctx = useStickyScroll();
+
+  return (
+    <FlatList
+      data={messages}
+      keyExtractor={item => item.id}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.3}
+      scrollEventThrottle={16}
+      onScroll={ctx?.onScroll}
+      inverted={true}
+      style={styles.listContainer}
+      ListFooterComponent={() => listFooter}
+      ListHeaderComponent={() => listHeader}
+      renderItem={({ item, index }) =>
+        item.isSystemMessage ? (
+          <SystemMessageRow message={item} />
+        ) : (
+          <ChatMessageRow
+            message={item}
+            index={index}
+            messages={messages}
+            chatType={chatType}
+            currentUserId={'u1'}
+          />
+        )
+      }
+    />
+  );
+}
 
 export default function ChatDetailsScreen({
   route,
@@ -48,6 +106,12 @@ export default function ChatDetailsScreen({
   );
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
+
+  const windowHeight = useWindowDimensions().height;
+  // TODO: improve this
+  const viewportTop = insets.top + 56;
+  const viewportBottom = windowHeight - insets.bottom - 60;
+
   const hasDisabledInput = useMemo(() => {
     return !!sending || !!loading;
   }, [sending, loading]);
@@ -89,8 +153,8 @@ export default function ChatDetailsScreen({
   }, [styles.listBottomContainer]);
 
   useEffect(() => {
-    dispatch(fetchMessagesByChatId({ chatId }));
-  }, [chatId, dispatch]);
+    dispatch(fetchMessagesByChatId({ chatId, chatType }));
+  }, [chatId, chatType, dispatch]);
 
   return (
     <View style={styles.container}>
@@ -106,30 +170,20 @@ export default function ChatDetailsScreen({
               variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
             />
           ) : (
-            <FlatList
-              data={messages}
-              keyExtractor={item => item.id}
-              onEndReached={handleEndReached}
-              onEndReachedThreshold={0.3}
-              scrollEventThrottle={16}
-              inverted={true}
-              style={styles.listContainer}
-              ListFooterComponent={() => listFooter}
-              ListHeaderComponent={() => listHeader}
-              renderItem={({ item, index }) =>
-                item.isSystemMessage ? (
-                  <SystemMessageRow message={item} />
-                ) : (
-                  <ChatMessageRow
-                    message={item}
-                    index={index}
-                    messages={messages}
-                    chatType={chatType}
-                    currentUserId={'u1'}
-                  />
-                )
-              }
-            />
+            <StickyScrollProvider
+              viewportTop={viewportTop}
+              viewportBottom={viewportBottom}
+            >
+              <ChatList
+                messages={messages}
+                chatType={chatType}
+                currentUserId={'u1'}
+                handleEndReached={handleEndReached}
+                styles={styles}
+                listFooter={listFooter}
+                listHeader={listHeader}
+              />
+            </StickyScrollProvider>
           )}
           <StickyInputFooter bottomInset={insets.bottom}>
             <InputBar
