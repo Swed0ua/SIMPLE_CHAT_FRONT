@@ -1,3 +1,5 @@
+import { ChatType } from '../types/chat';
+
 export type MockMessageItem = {
   id: string;
   senderId: string;
@@ -41,14 +43,28 @@ const TEXTS = [
   'Wait',
 ];
 
-export const MOCK_MESSAGES: MockMessageItem[] = Array.from(
-  { length: 100 },
-  (_, i) => {
+export const getMockMessages = (
+  type: ChatType = ChatType.DIRECT,
+): MockMessageItem[] => {
+  const length = 100;
+  return Array.from({ length }, (_, i) => {
     const index = i + 1;
     const isSystemMessage = index % 7 === 0;
+    let senderId = index % 3 === 0 ? 'u1' : 'u2';
+    if (type === ChatType.GROUP) {
+      const a = [
+        length - 12,
+        // length - 4,
+        // length - 7,
+        // length - 8,
+        // length - 11,
+        // length - 12,
+      ];
+      senderId = a.includes(index) ? 'u2' : 'u1';
+    }
     return {
       id: `m${index}`,
-      senderId: index % 3 === 0 ? 'u1' : 'u2',
+      senderId: senderId,
       isSystemMessage: isSystemMessage ? true : false,
       text: isSystemMessage ? 'System message ' : TEXTS[index % TEXTS.length],
       createdAt: new Date(now - (100 - index) * HOUR).toISOString(),
@@ -61,5 +77,7 @@ export const MOCK_MESSAGES: MockMessageItem[] = Array.from(
           }
         : undefined,
     };
-  },
-).reverse();
+  }).reverse();
+};
+
+export const MOCK_MESSAGES: MockMessageItem[] = getMockMessages();

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { MOCK_MESSAGES } from '../../mocks/mockMessages';
+import { getMockMessages, MOCK_MESSAGES } from '../../mocks/mockMessages';
 import { MESSAGES_CONFIG } from '../../config/mesages';
 import { ChatType } from '../../types/chat';
 
@@ -53,6 +53,7 @@ type SendMessagePayload = { chatId: string; text: string };
 type FetchMessagesPayload = {
   chatId: string;
   cursor?: { id: string; createdAt: string } | null;
+  chatType?: ChatType | null;
 };
 
 const initialState: MessagesState = {
@@ -75,16 +76,17 @@ export const fetchMessagesByChatId = createAsyncThunk<
   { state: RootState; rejectValue: string }
 >(
   'messages/fetchMessages',
-  async ({ chatId, cursor = null }: FetchMessagesPayload) => {
+  async ({ chatId, cursor = null, chatType = null }: FetchMessagesPayload) => {
     console.log('fetchMessagesByChatId : ', chatId);
-    await new Promise<void>(resolve => setTimeout(resolve, 5000));
+    await new Promise<void>(resolve => setTimeout(resolve, 500));
+    const messagesMock = getMockMessages(chatType ?? ChatType.DIRECT);
     if (!cursor) {
-      return mockMessages
+      return messagesMock
         .slice(0, MESSAGES_CONFIG.initialLoadLimit)
         .map(m => ({ ...m, chatId }));
     }
     const cursorTime = new Date(cursor.createdAt).getTime();
-    const olderMessages = mockMessages.filter(m => {
+    const olderMessages = messagesMock.filter(m => {
       return new Date(m.createdAt).getTime() < cursorTime;
     });
     const chunk = olderMessages
