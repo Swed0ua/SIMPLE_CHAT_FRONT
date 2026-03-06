@@ -39,6 +39,9 @@ type ChatDetailsScreenProps = NativeStackScreenProps<
   typeof ROUTES.ChatDetails
 >;
 const EMPTY_INDICES: number[] = [];
+const LABEL_HIDE_DELAY_MS = 2000;
+const LABEL_DEFAULT_OPACITY = 0;
+const LABEL_VISIBLE_OPACITY = 1;
 
 export default function ChatDetailsScreen({
   route,
@@ -69,6 +72,10 @@ export default function ChatDetailsScreen({
   const dividerPositionsRef = useRef<DividerPosition[]>([]);
   const listHeightRef = useRef(0);
   const [floatingDayKey, setFloatingDayKey] = useState<string | null>(null);
+  const [labelVisible, setLabelVisible] = useState(false);
+  const hideLabelTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
@@ -77,6 +84,15 @@ export default function ChatDetailsScreen({
     () => buildDisplayList(messages ?? [], dayDividerIndices),
     [messages, dayDividerIndices],
   );
+
+  const showLabelAndScheduleHide = useCallback(() => {
+    if (hideLabelTimeoutRef.current) clearTimeout(hideLabelTimeoutRef.current);
+    setLabelVisible(true);
+    hideLabelTimeoutRef.current = setTimeout(
+      () => setLabelVisible(false),
+      LABEL_HIDE_DELAY_MS,
+    );
+  }, []);
 
   const hasDisabledInput = useMemo(() => {
     return !!sending || !!loading;
@@ -120,8 +136,10 @@ export default function ChatDetailsScreen({
       );
       console.log('key', key);
       setFloatingDayKey(prev => (prev === key ? prev : key));
+      // set date label visblity
+      showLabelAndScheduleHide();
     },
-    [contentHeight],
+    [contentHeight, showLabelAndScheduleHide],
   );
 
   const handleItemLayout = useCallback((index: number, height: number) => {
@@ -206,7 +224,12 @@ export default function ChatDetailsScreen({
             )
           }
         />
-        <FloatingChatDayLabel dateKey={floatingDayKey ?? fallbackDayKey} />
+        <FloatingChatDayLabel
+          dateKey={floatingDayKey ?? fallbackDayKey}
+          visible={labelVisible}
+          defaultOpacity={LABEL_DEFAULT_OPACITY}
+          visibleOpacity={LABEL_VISIBLE_OPACITY}
+        />
       </View>
     );
   }, [
@@ -220,9 +243,17 @@ export default function ChatDetailsScreen({
     handleScroll,
     listFooter,
     listHeader,
+    labelVisible,
     messages,
     styles.listContainer,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (hideLabelTimeoutRef.current)
+        clearTimeout(hideLabelTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     dispatch(fetchMessagesByChatId({ chatId }));
