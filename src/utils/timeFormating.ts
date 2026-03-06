@@ -63,6 +63,10 @@ export function getChatDaySeparatorLabel(
   if (isNaN(date.getTime())) return '';
   if (isToday(date)) return t ? t('time.today') : 'Today';
   if (isYesterday(date)) return t ? t('time.yesterday') : 'Yesterday';
+  if (differenceInDays(new Date(), date) < 7) {
+    const dayOfWeek = format(date, 'EEEE', { locale });
+    return `${dayOfWeek} ${format(date, 'dd', { locale })}`;
+  }
   return format(date, 'dd.MM.yyyy', { locale });
 }
 

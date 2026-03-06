@@ -4,6 +4,7 @@
     "noMessages": "No messages"
   },
   "time": {
+    "today": "Today",
     "yesterday": "Yesterday"
   },
   "systemMessage": {

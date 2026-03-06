@@ -27,10 +27,6 @@ export function ChatMessageRow({
 
   return (
     <>
-      <Text>Message index: {index.toString()}</Text>
-      <Text>
-        Message createdAt: {new Date(message.createdAt).toLocaleString()}
-      </Text>
       <ChatBubble
         message={message}
         chatType={chatType}
