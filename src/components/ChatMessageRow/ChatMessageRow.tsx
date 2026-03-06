@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { Message } from '../../store/slices/messagesSlice';
 import { ChatType } from '../../types/chat';
 import { getIsInMessagesGroup } from '../../utils/chats';
@@ -25,11 +26,17 @@ export function ChatMessageRow({
     : { isFirst: true, isLast: true };
 
   return (
-    <ChatBubble
-      message={message}
-      chatType={chatType}
-      currentUserId={currentUserId}
-      isInMessagesGroup={isInMessagesGroup}
-    />
+    <>
+      <Text>Message index: {index.toString()}</Text>
+      <Text>
+        Message createdAt: {new Date(message.createdAt).toLocaleString()}
+      </Text>
+      <ChatBubble
+        message={message}
+        chatType={chatType}
+        currentUserId={currentUserId}
+        isInMessagesGroup={isInMessagesGroup}
+      />
+    </>
   );
 }

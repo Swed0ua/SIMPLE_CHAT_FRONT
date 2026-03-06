@@ -3,7 +3,7 @@ import { View, FlatList, ActivityIndicator } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -20,11 +20,13 @@ import { StickyInputFooter } from '../../../components/Keyboards/StickyInputFoot
 import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRow';
 import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
 import { SystemMessageRow } from '../../../components/ChatMessageRow/SystemMessageRow';
+import { buildDisplayList } from '../../../utils/systemMessageUtils';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
   typeof ROUTES.ChatDetails
 >;
+const EMPTY_INDICES: number[] = [];
 
 export default function ChatDetailsScreen({
   route,
@@ -42,12 +44,21 @@ export default function ChatDetailsScreen({
     useAppSelector(s => s.chat.list.find(c => c.id === chatId)?.type) ??
     ChatType.DIRECT;
   const messages = useAppSelector(s => s.messages.byChatId[chatId]);
+  const dayDividerIndices = useAppSelector(
+    s => s.messages.dayDividerIndicesByChatId[chatId] ?? EMPTY_INDICES,
+  );
   const loading = useAppSelector(s => s.messages.loadingByChatId[chatId]);
   const loadingMore = useAppSelector(
     s => s.messages.loadingMoreByChatId[chatId],
   );
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
+
+  const displayList = useMemo(
+    () => buildDisplayList(messages ?? [], dayDividerIndices),
+    [messages, dayDividerIndices],
+  );
+
   const hasDisabledInput = useMemo(() => {
     return !!sending || !!loading;
   }, [sending, loading]);
@@ -107,7 +118,8 @@ export default function ChatDetailsScreen({
             />
           ) : (
             <FlatList
-              data={messages}
+              data={displayList}
+              // stickyHeaderIndices={dayDividerIndices.map(i => i + 1)}
               keyExtractor={item => item.id}
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.3}

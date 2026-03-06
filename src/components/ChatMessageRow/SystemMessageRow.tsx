@@ -3,6 +3,7 @@ import { getNormalizedSystemMessage } from '../../utils/systemMessageUtils';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { SystemMessage } from './SystemMessage';
+import { getChatDaySeparatorLabel } from '../../utils/timeFormating';
 
 type SystemMessageRowProps = {
   message: Message;
@@ -32,6 +33,8 @@ function getDisplayText(
             name: systemMessageData.memberName,
           })
         : t('systemMessage.removedMember');
+    case 'DayDivider':
+      return getChatDaySeparatorLabel(systemMessageData.dateKey, t);
     case 'Other':
     default:
       return text;

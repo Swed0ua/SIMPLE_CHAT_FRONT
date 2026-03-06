@@ -3,6 +3,7 @@ import { RootState } from '../store';
 import { getMockMessages, MOCK_MESSAGES } from '../../mocks/mockMessages';
 import { MESSAGES_CONFIG } from '../../config/mesages';
 import { ChatType } from '../../types/chat';
+import { getDayDividerIndices } from '../../utils/timeFormating';
 
 export interface Message {
   id: string;
@@ -19,6 +20,7 @@ export type SystemMessageType =
   | 'CreatedRoom'
   | 'AddedMember'
   | 'RemoveMember'
+  | 'DayDivider'
   | 'Other';
 
 export type SystemMessageData =
@@ -35,12 +37,14 @@ export type SystemMessageData =
       memberName?: string;
       removedByUserId?: string;
     }
+  | { type: 'DayDivider'; dateKey: string }
   | { type: 'Other' };
 
 export interface MessagesState {
   sendingByChatId: Record<string, boolean>;
   draftByChatId: Record<string, string>;
   byChatId: Record<string, Message[]>;
+  dayDividerIndicesByChatId: Record<string, number[]>;
   chatTypes: Record<string, ChatType>;
   loadingByChatId: Record<string, boolean>;
   loadingMoreByChatId: Record<string, boolean>;
@@ -60,6 +64,7 @@ const initialState: MessagesState = {
   sendingByChatId: {},
   draftByChatId: {},
   byChatId: {},
+  dayDividerIndicesByChatId: {},
   chatTypes: {},
   loadingByChatId: {},
   loadingMoreByChatId: {},
@@ -175,6 +180,8 @@ const messagesSlice = createSlice({
         } else {
           state.byChatId[chatId] = action.payload;
         }
+        const list = state.byChatId[chatId] ?? [];
+        state.dayDividerIndicesByChatId[chatId] = getDayDividerIndices(list);
         state.errorByChatId[chatId] = null;
       })
       .addCase(fetchMessagesByChatId.rejected, (state, action) => {
