@@ -3,7 +3,13 @@ import { View, FlatList, ActivityIndicator } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { useCallback, useEffect, useMemo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
@@ -21,6 +27,12 @@ import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRo
 import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
 import { SystemMessageRow } from '../../../components/ChatMessageRow/SystemMessageRow';
 import { buildDisplayList } from '../../../utils/systemMessageUtils';
+import { FloatingChatDayLabel } from '../../../components/FloatingChatDayLabel';
+import {
+  buildDividerPositions,
+  DividerPosition,
+  getFloatingDayKeyFromPositions,
+} from '../../../utils/floatingDayUtils';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -51,6 +63,13 @@ export default function ChatDetailsScreen({
   const loadingMore = useAppSelector(
     s => s.messages.loadingMoreByChatId[chatId],
   );
+
+  const [itemHeights, setItemHeights] = useState<Record<number, number>>({});
+  const [contentHeight, setContentHeight] = useState(0);
+  const dividerPositionsRef = useRef<DividerPosition[]>([]);
+  const listHeightRef = useRef(0);
+  const [floatingDayKey, setFloatingDayKey] = useState<string | null>(null);
+
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
 
@@ -81,6 +100,37 @@ export default function ChatDetailsScreen({
     [chatId, dispatch],
   );
 
+  const handleContentSizeChange = useCallback((_w: number, h: number) => {
+    setContentHeight(h);
+  }, []);
+
+  const handleScroll = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+      console.log(
+        'e.nativeEvent.contentOffset.y',
+        contentHeight - e.nativeEvent.contentOffset.y,
+        contentHeight,
+        e.nativeEvent.contentOffset.y,
+      );
+      const viewportTop =
+        contentHeight - e.nativeEvent.contentOffset.y - listHeightRef.current;
+      const key = getFloatingDayKeyFromPositions(
+        Math.max(0, Math.min(contentHeight, viewportTop)),
+        dividerPositionsRef.current,
+      );
+      console.log('key', key);
+      setFloatingDayKey(prev => (prev === key ? prev : key));
+    },
+    [contentHeight],
+  );
+
+  const handleItemLayout = useCallback((index: number, height: number) => {
+    setItemHeights(prev => {
+      if (prev[index] === height) return prev;
+      return { ...prev, [index]: height };
+    });
+  }, []);
+
   const handleEndReached = useCallback(() => {
     dispatch(loadMoreMessages(chatId));
   }, [chatId, dispatch]);
@@ -99,9 +149,94 @@ export default function ChatDetailsScreen({
     return <View style={styles.listBottomContainer} />;
   }, [styles.listBottomContainer]);
 
+  const fallbackDayKey = useMemo(() => {
+    const idx = dayDividerIndices[0];
+    if (idx == null) return null;
+    const sd = displayList[idx]?.systemMessageData;
+    return sd?.type === 'DayDivider' && 'dateKey' in sd
+      ? (sd as { dateKey: string }).dateKey
+      : null;
+  }, [dayDividerIndices, displayList]);
+
+  const renderChatArea = useCallback(() => {
+    return (
+      <View
+        style={{ flex: 1, overflow: 'hidden' }}
+        onLayout={e => {
+          listHeightRef.current = e.nativeEvent.layout.height;
+        }}
+      >
+        <FlatList
+          data={displayList}
+          keyExtractor={item => item.id}
+          onContentSizeChange={handleContentSizeChange}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.3}
+          scrollEventThrottle={16}
+          onScroll={handleScroll}
+          inverted={true}
+          style={styles.listContainer}
+          ListFooterComponent={() => listFooter}
+          ListHeaderComponent={() => listHeader}
+          renderItem={({ item, index: listIndex }) =>
+            item.isSystemMessage ? (
+              <View
+                onLayout={e => {
+                  const { height } = e.nativeEvent.layout;
+                  handleItemLayout(listIndex, height);
+                }}
+              >
+                <SystemMessageRow message={item} />
+              </View>
+            ) : (
+              <View
+                onLayout={e => {
+                  const { height } = e.nativeEvent.layout;
+                  handleItemLayout(listIndex, height);
+                }}
+              >
+                <ChatMessageRow
+                  message={item}
+                  index={listIndex}
+                  messages={messages}
+                  chatType={chatType}
+                  currentUserId={'u1'}
+                />
+              </View>
+            )
+          }
+        />
+        <FloatingChatDayLabel dateKey={floatingDayKey ?? fallbackDayKey} />
+      </View>
+    );
+  }, [
+    chatType,
+    displayList,
+    fallbackDayKey,
+    floatingDayKey,
+    handleContentSizeChange,
+    handleEndReached,
+    handleItemLayout,
+    handleScroll,
+    listFooter,
+    listHeader,
+    messages,
+    styles.listContainer,
+  ]);
+
   useEffect(() => {
     dispatch(fetchMessagesByChatId({ chatId }));
   }, [chatId, dispatch]);
+
+  useEffect(() => {
+    dividerPositionsRef.current = buildDividerPositions(
+      itemHeights,
+      contentHeight,
+      dayDividerIndices,
+      displayList,
+    );
+    console.log('dividerPositionsRef', dividerPositionsRef.current);
+  }, [itemHeights, contentHeight, dayDividerIndices, displayList]);
 
   return (
     <View style={styles.container}>
@@ -117,31 +252,7 @@ export default function ChatDetailsScreen({
               variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
             />
           ) : (
-            <FlatList
-              data={displayList}
-              // stickyHeaderIndices={dayDividerIndices.map(i => i + 1)}
-              keyExtractor={item => item.id}
-              onEndReached={handleEndReached}
-              onEndReachedThreshold={0.3}
-              scrollEventThrottle={16}
-              inverted={true}
-              style={styles.listContainer}
-              ListFooterComponent={() => listFooter}
-              ListHeaderComponent={() => listHeader}
-              renderItem={({ item, index }) =>
-                item.isSystemMessage ? (
-                  <SystemMessageRow message={item} />
-                ) : (
-                  <ChatMessageRow
-                    message={item}
-                    index={index}
-                    messages={messages}
-                    chatType={chatType}
-                    currentUserId={'u1'}
-                  />
-                )
-              }
-            />
+            renderChatArea()
           )}
           <StickyInputFooter bottomInset={insets.bottom}>
             <InputBar
