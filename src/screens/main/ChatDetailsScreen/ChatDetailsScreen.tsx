@@ -4,6 +4,7 @@ import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -13,6 +14,7 @@ import React, {
 import {
   fetchMessagesByChatId,
   loadMoreMessages,
+  Message,
   sendMessage,
   setDraft,
 } from '../../../store/slices/messagesSlice';
@@ -40,11 +42,119 @@ type ChatDetailsScreenProps = NativeStackScreenProps<
 >;
 const EMPTY_INDICES: number[] = [];
 const LABEL_HIDE_DELAY_MS = 2000;
-// Note: label position has offset in bottom of the screen 20px relative to the divider
+/** Label is fixed at viewport top, so there's an offset relative to the divider position in the list. */
 const LABEL_NEAR_DIVIDER_TOP_PX = 100;
 const LABEL_NEAR_DIVIDER_BOTTOM_PX = 10;
 const LABEL_DEFAULT_OPACITY = 0;
 const LABEL_VISIBLE_OPACITY = 1;
+const END_REACHED_THRESHOLD = 0.3;
+const SCROLL_EVENT_THROTTLE_MS = 50;
+
+type ChatMessageListRowProps = {
+  item: Message;
+  index: number;
+  messages: Message[];
+  chatType: ChatType;
+  currentUserId: string | undefined;
+  onLayout: (index: number, height: number) => void;
+};
+
+const ChatMessageListRow = memo(function ChatMessageListRow({
+  item,
+  index,
+  messages,
+  chatType,
+  currentUserId,
+  onLayout,
+}: ChatMessageListRowProps) {
+  return item.isSystemMessage ? (
+    <View
+      onLayout={e => onLayout(index, e.nativeEvent.layout.height)}
+      collapsable={false}
+    >
+      <SystemMessageRow message={item} />
+    </View>
+  ) : (
+    <View
+      onLayout={e => onLayout(index, e.nativeEvent.layout.height)}
+      collapsable={false}
+    >
+      <ChatMessageRow
+        message={item}
+        index={index}
+        messages={messages}
+        chatType={chatType}
+        currentUserId={currentUserId}
+      />
+    </View>
+  );
+});
+
+type ChatMessageListProps = {
+  data: Message[];
+  messages: Message[];
+  chatType: ChatType;
+  currentUserId: string | undefined;
+  listContainerStyle: object;
+  listFooter: React.ReactElement | null;
+  listHeader: React.ReactElement;
+  onScroll: (e: { nativeEvent: { contentOffset: { y: number } } }) => void;
+  onContentSizeChange: (w: number, h: number) => void;
+  onItemLayout: (index: number, height: number) => void;
+  onEndReached: () => void;
+  onListLayout: (height: number) => void;
+};
+
+const ChatMessageList = memo(function ChatMessageList({
+  data,
+  messages,
+  chatType,
+  currentUserId,
+  listContainerStyle,
+  listFooter,
+  listHeader,
+  onScroll,
+  onContentSizeChange,
+  onItemLayout,
+  onEndReached,
+  onListLayout,
+}: ChatMessageListProps) {
+  const renderItem = useCallback(
+    ({ item, index }: { item: Message; index: number }) => (
+      <ChatMessageListRow
+        item={item}
+        index={index}
+        messages={messages}
+        chatType={chatType}
+        currentUserId={currentUserId}
+        onLayout={onItemLayout}
+      />
+    ),
+    [messages, chatType, currentUserId, onItemLayout],
+  );
+  const keyExtractor = useCallback((item: Message) => item.id, []);
+  return (
+    <View
+      style={{ flex: 1, overflow: 'hidden' }}
+      onLayout={e => onListLayout(e.nativeEvent.layout.height)}
+    >
+      <FlatList
+        data={data}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        onScroll={onScroll}
+        onContentSizeChange={onContentSizeChange}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={END_REACHED_THRESHOLD}
+        scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
+        inverted
+        style={listContainerStyle}
+        ListFooterComponent={listFooter}
+        ListHeaderComponent={listHeader}
+      />
+    </View>
+  );
+});
 
 export default function ChatDetailsScreen({
   route,
@@ -70,7 +180,7 @@ export default function ChatDetailsScreen({
     s => s.messages.loadingMoreByChatId[chatId],
   );
 
-  const [itemHeights, setItemHeights] = useState<Record<number, number>>({});
+  const itemHeightsRef = useRef<Record<number, number>>({});
   const [contentHeight, setContentHeight] = useState(0);
   const dividerPositionsRef = useRef<DividerPosition[]>([]);
   const listHeightRef = useRef(0);
@@ -82,6 +192,7 @@ export default function ChatDetailsScreen({
 
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
+  const currentUserId = useAppSelector(s => s.auth.user?.id);
 
   const displayList = useMemo(
     () => buildDisplayList(messages ?? [], dayDividerIndices),
@@ -107,7 +218,9 @@ export default function ChatDetailsScreen({
       if (!trimmed) return;
       dispatch(sendMessage({ chatId, text: trimmed }))
         .unwrap()
-        .catch(() => {});
+        .catch(err => {
+          console.error('sendMessage failed', err);
+        });
     },
     [chatId, dispatch],
   );
@@ -154,10 +267,8 @@ export default function ChatDetailsScreen({
   );
 
   const handleItemLayout = useCallback((index: number, height: number) => {
-    setItemHeights(prev => {
-      if (prev[index] === height) return prev;
-      return { ...prev, [index]: height };
-    });
+    if (itemHeightsRef.current[index] === height) return;
+    itemHeightsRef.current = { ...itemHeightsRef.current, [index]: height };
   }, []);
 
   const handleEndReached = useCallback(() => {
@@ -187,78 +298,6 @@ export default function ChatDetailsScreen({
       : null;
   }, [dayDividerIndices, displayList]);
 
-  const renderChatArea = useCallback(() => {
-    return (
-      <View
-        style={{ flex: 1, overflow: 'hidden' }}
-        onLayout={e => {
-          listHeightRef.current = e.nativeEvent.layout.height;
-        }}
-      >
-        <FlatList
-          data={displayList}
-          keyExtractor={item => item.id}
-          onContentSizeChange={handleContentSizeChange}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.3}
-          scrollEventThrottle={50}
-          onScroll={handleScroll}
-          inverted={true}
-          style={styles.listContainer}
-          ListFooterComponent={() => listFooter}
-          ListHeaderComponent={() => listHeader}
-          renderItem={({ item, index: listIndex }) =>
-            item.isSystemMessage ? (
-              <View
-                onLayout={e => {
-                  const { height } = e.nativeEvent.layout;
-                  handleItemLayout(listIndex, height);
-                }}
-              >
-                <SystemMessageRow message={item} />
-              </View>
-            ) : (
-              <View
-                onLayout={e => {
-                  const { height } = e.nativeEvent.layout;
-                  handleItemLayout(listIndex, height);
-                }}
-              >
-                <ChatMessageRow
-                  message={item}
-                  index={listIndex}
-                  messages={messages}
-                  chatType={chatType}
-                  currentUserId={'u1'}
-                />
-              </View>
-            )
-          }
-        />
-        <FloatingChatDayLabel
-          dateKey={floatingDayKey ?? fallbackDayKey}
-          visible={labelVisible}
-          defaultOpacity={LABEL_DEFAULT_OPACITY}
-          visibleOpacity={LABEL_VISIBLE_OPACITY}
-        />
-      </View>
-    );
-  }, [
-    chatType,
-    displayList,
-    fallbackDayKey,
-    floatingDayKey,
-    handleContentSizeChange,
-    handleEndReached,
-    handleItemLayout,
-    handleScroll,
-    listFooter,
-    listHeader,
-    labelVisible,
-    messages,
-    styles.listContainer,
-  ]);
-
   useEffect(() => {
     return () => {
       if (hideLabelTimeoutRef.current)
@@ -272,12 +311,16 @@ export default function ChatDetailsScreen({
 
   useEffect(() => {
     dividerPositionsRef.current = buildDividerPositions(
-      itemHeights,
+      itemHeightsRef.current,
       contentHeight,
       dayDividerIndices,
       displayList,
     );
-  }, [itemHeights, contentHeight, dayDividerIndices, displayList]);
+  }, [contentHeight, dayDividerIndices, displayList]);
+
+  useEffect(() => {
+    itemHeightsRef.current = {};
+  }, [chatId]);
 
   return (
     <View style={styles.container}>
@@ -293,7 +336,30 @@ export default function ChatDetailsScreen({
               variant={chatType === ChatType.DIRECT ? 'single' : 'multiple'}
             />
           ) : (
-            renderChatArea()
+            <>
+              <ChatMessageList
+                data={displayList}
+                messages={messages ?? []}
+                chatType={chatType}
+                currentUserId={currentUserId}
+                listContainerStyle={styles.listContainer}
+                listFooter={listFooter}
+                listHeader={listHeader}
+                onScroll={handleScroll}
+                onContentSizeChange={handleContentSizeChange}
+                onItemLayout={handleItemLayout}
+                onEndReached={handleEndReached}
+                onListLayout={h => {
+                  listHeightRef.current = h;
+                }}
+              />
+              <FloatingChatDayLabel
+                dateKey={floatingDayKey ?? fallbackDayKey}
+                visible={labelVisible}
+                defaultOpacity={LABEL_DEFAULT_OPACITY}
+                visibleOpacity={LABEL_VISIBLE_OPACITY}
+              />
+            </>
           )}
           <StickyInputFooter bottomInset={insets.bottom}>
             <InputBar
