@@ -13,6 +13,7 @@ import { MainScreenWrapper } from '../../components/MainScreenWrapper';
 export default function ChatsScreen() {
   const tabBarHeight = useAppSelector(s => s.layout.tabBarHeight);
   const chats = useAppSelector(s => s.chat.list);
+  const draftByChatId = useAppSelector(s => s.messages.draftByChatId);
   const dispatch = useAppDispatch();
 
   const navigation = useNavigation<MainNavigationProp>();
@@ -26,9 +27,15 @@ export default function ChatsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Chat }) => {
-      return <ChatItem chatItem={item} onPress={handleChatItemPress} />;
+      return (
+        <ChatItem
+          chatItem={item}
+          draft={draftByChatId[item.id]}
+          onPress={handleChatItemPress}
+        />
+      );
     },
-    [handleChatItemPress],
+    [handleChatItemPress, draftByChatId],
   );
 
   const renderChatListFooter = useCallback(() => {

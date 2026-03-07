@@ -54,6 +54,10 @@ export const getStyle = ({ theme }: { theme: Theme }) => {
     },
     contentTextMessageWrapper: {
       flex: 1,
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
     },
     contentTextMessageText: {
       fontSize: theme.typography.fontSize.xs,
@@ -61,22 +65,15 @@ export const getStyle = ({ theme }: { theme: Theme }) => {
       color: theme.colors.text.primary,
       opacity: 0.5,
     },
-    contentTextRightContentWrapper: {},
-    contentTextMessageIndicator: {
-      borderRadius: theme.borderRadius.full,
-      backgroundColor: theme.colors.info,
-      paddingHorizontal: theme.spacing.xs,
-      minWidth: theme.spacing.md,
-      height: theme.spacing.md,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      alignSelf: 'flex-start',
+    contentTextMessageTextDraft: {
+      color: theme.colors.error,
+      opacity: 0.7,
     },
-    contentTextMessageIndicatorText: {
-      color: theme.colors.text.inverse,
-      fontSize: theme.typography.fontSize.xxs,
-      fontWeight: theme.typography.fontWeight.medium,
+    contentTextRightContentWrapper: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
     },
   });
 };

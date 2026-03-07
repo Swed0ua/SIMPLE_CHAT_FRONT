@@ -1,6 +1,8 @@
-import { ViewStyle, Image, StyleSheet, View, Text } from 'react-native';
+import { ViewStyle, StyleSheet, View, Text } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { useTheme } from '../context/ThemeContext';
 import { Theme } from '../types/theme';
+import React from 'react';
 
 export type AvatarProps = {
   uri?: string | null;
@@ -26,8 +28,11 @@ export const Avatar = ({
   const styles = getStyles(theme, size);
   if (uri) {
     return (
-      <Image
-        source={{ uri }}
+      <FastImage
+        source={{
+          uri,
+          cache: FastImage.cacheControl.immutable,
+        }}
         style={[styles.image, { width: size, height: size }]}
       />
     );

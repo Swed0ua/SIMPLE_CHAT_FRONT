@@ -1,6 +1,7 @@
 {
   "appName": "SimpleChat",
   "chatItem": {
+    "draft": "Draft",
     "noMessages": "No messages"
   },
   "time": {

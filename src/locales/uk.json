@@ -1,6 +1,7 @@
 {
   "appName": "Простий Чат",
   "chatItem": {
+    "draft": "Чернетка",
     "noMessages": "Немає повідомлень"
   },
   "time": {

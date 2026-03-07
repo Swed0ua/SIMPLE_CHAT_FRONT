@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, TextStyle, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getStyle } from './ChatItemStyle';
 import { Chat } from '../../store/slices/chatSlice';
@@ -8,13 +8,15 @@ import { useTheme } from '../../context/ThemeContext';
 import { truncateForDisplay } from '../../utils/textFormating';
 import { formatChatTime } from '../../utils/timeFormating';
 import { Avatar } from '../Avatar';
+import { Badge } from '../Badge/Badge';
 
 type ChatItemProps = {
   chatItem: Chat;
+  draft: string | undefined;
   onPress: (chatId: string) => void;
 };
 
-function ChatItem({ chatItem, onPress }: ChatItemProps) {
+function ChatItem({ chatItem, onPress, draft }: ChatItemProps) {
   const theme = useTheme();
   const { t } = useTranslation();
   const styles = useMemo(() => getStyle({ theme: theme.theme }), [theme.theme]);
@@ -23,10 +25,12 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
     return <Avatar uri={chatItem.avatarUrl} name={userSymbol} />;
   }, [chatItem.avatarUrl, userSymbol]);
 
-  const truncatedLastMessage = truncateForDisplay(
-    chatItem?.lastMessage ?? t('chatItem.noMessages'),
-    40,
-  );
+  const getLastMessage = useCallback(() => {
+    if (draft) return draft;
+    return chatItem?.lastMessage ?? t('chatItem.noMessages');
+  }, [draft, chatItem?.lastMessage, t]);
+  const truncatedLastMessage = truncateForDisplay(getLastMessage(), 40);
+
   const lastActiveTimeISO = chatItem?.lastMessageAt ?? chatItem?.createdAt;
   const lastActiveTimeFormatted = formatChatTime(lastActiveTimeISO, t);
   const truncatedTitle = truncateForDisplay(chatItem.title ?? '', 24);
@@ -62,14 +66,28 @@ function ChatItem({ chatItem, onPress }: ChatItemProps) {
         </View>
         <View style={styles.contentTextWrapper}>
           <View style={styles.contentTextMessageWrapper}>
-            <Text style={styles.contentTextMessageText}>
+            {draft && (
+              <Text
+                style={[
+                  styles.contentTextMessageText,
+                  styles.contentTextMessageTextDraft,
+                  { opacity: 0.9 } as TextStyle,
+                ]}
+              >
+                {t('chatItem.draft')}:
+              </Text>
+            )}
+            <Text
+              style={[
+                styles.contentTextMessageText,
+                draft && styles.contentTextMessageTextDraft,
+              ]}
+            >
               {truncatedLastMessage}
             </Text>
           </View>
           <View style={styles.contentTextRightContentWrapper}>
-            <View style={styles.contentTextMessageIndicator}>
-              <Text style={styles.contentTextMessageIndicatorText}>19</Text>
-            </View>
+            <Badge value={19} />
           </View>
         </View>
       </View>
