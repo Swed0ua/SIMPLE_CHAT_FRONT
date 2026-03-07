@@ -4,9 +4,11 @@ import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
 import React, {
+  forwardRef,
   memo,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -29,6 +31,7 @@ import { ChatMessageRow } from '../../../components/ChatMessageRow/ChatMessageRo
 import { ScreenHeader } from '../../../components/ScreenHeader/ScreenHeader';
 import { SystemMessageRow } from '../../../components/ChatMessageRow/SystemMessageRow';
 import { buildDisplayList } from '../../../utils/systemMessageUtils';
+import { getDayKey } from '../../../utils/timeFormating';
 import { FloatingChatDayLabel } from '../../../components/FloatingChatDayLabel';
 import {
   buildDividerPositions,
@@ -90,6 +93,10 @@ const ChatMessageListRow = memo(function ChatMessageListRow({
   );
 });
 
+export type ChatMessageListRef = {
+  scrollToIndex: (params: { index: number; animated?: boolean }) => void;
+};
+
 type ChatMessageListProps = {
   data: Message[];
   messages: Message[];
@@ -105,56 +112,71 @@ type ChatMessageListProps = {
   onListLayout: (height: number) => void;
 };
 
-const ChatMessageList = memo(function ChatMessageList({
-  data,
-  messages,
-  chatType,
-  currentUserId,
-  listContainerStyle,
-  listFooter,
-  listHeader,
-  onScroll,
-  onContentSizeChange,
-  onItemLayout,
-  onEndReached,
-  onListLayout,
-}: ChatMessageListProps) {
-  const renderItem = useCallback(
-    ({ item, index }: { item: Message; index: number }) => (
-      <ChatMessageListRow
-        item={item}
-        index={index}
-        messages={messages}
-        chatType={chatType}
-        currentUserId={'u1'}
-        onLayout={onItemLayout}
-      />
-    ),
-    [messages, chatType, currentUserId, onItemLayout],
-  );
-  const keyExtractor = useCallback((item: Message) => item.id, []);
-  return (
-    <View
-      style={{ flex: 1, overflow: 'hidden' }}
-      onLayout={e => onListLayout(e.nativeEvent.layout.height)}
-    >
-      <FlatList
-        data={data}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        onScroll={onScroll}
-        onContentSizeChange={onContentSizeChange}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={END_REACHED_THRESHOLD}
-        scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
-        inverted
-        style={listContainerStyle}
-        ListFooterComponent={listFooter}
-        ListHeaderComponent={listHeader}
-      />
-    </View>
-  );
-});
+const ChatMessageList = memo(
+  forwardRef<ChatMessageListRef, ChatMessageListProps>(function ChatMessageList(
+    {
+      data,
+      messages,
+      chatType,
+      currentUserId,
+      listContainerStyle,
+      listFooter,
+      listHeader,
+      onScroll,
+      onContentSizeChange,
+      onItemLayout,
+      onEndReached,
+      onListLayout,
+    },
+    ref,
+  ) {
+    const flatListRef = useRef<FlatList<Message>>(null);
+    useImperativeHandle(ref, () => ({
+      scrollToIndex: params => {
+        flatListRef.current?.scrollToIndex({
+          ...params,
+          viewPosition: 1,
+        });
+      },
+    }));
+    const renderItem = useCallback(
+      ({ item, index }: { item: Message; index: number }) => (
+        <ChatMessageListRow
+          item={item}
+          index={index}
+          messages={messages}
+          chatType={chatType}
+          currentUserId={currentUserId}
+          onLayout={onItemLayout}
+        />
+      ),
+      [messages, chatType, currentUserId, onItemLayout],
+    );
+    const keyExtractor = useCallback((item: Message) => item.id, []);
+    return (
+      <View
+        style={{ flex: 1, overflow: 'hidden' }}
+        onLayout={e => onListLayout(e.nativeEvent.layout.height)}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={data}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          onScroll={onScroll}
+          onContentSizeChange={onContentSizeChange}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={END_REACHED_THRESHOLD}
+          scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
+          inverted
+          style={listContainerStyle}
+          ListFooterComponent={listFooter}
+          ListHeaderComponent={listHeader}
+        />
+      </View>
+    );
+  }),
+);
 
 export default function ChatDetailsScreen({
   route,
@@ -189,6 +211,7 @@ export default function ChatDetailsScreen({
   const hideLabelTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const listRef = useRef<ChatMessageListRef>(null);
 
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
@@ -298,6 +321,25 @@ export default function ChatDetailsScreen({
       : null;
   }, [dayDividerIndices, displayList]);
 
+  const handleFloatingLabelPress = useCallback(
+    (dateKey: string) => {
+      for (let i = 0; i < dayDividerIndices.length; i++) {
+        const divIdx = dayDividerIndices[i];
+        const item = displayList[divIdx];
+        if (!item?.createdAt) continue;
+        if (getDayKey(item.createdAt) === dateKey) {
+          listRef.current?.scrollToIndex({ index: divIdx, animated: true });
+          return;
+        }
+      }
+      listRef.current?.scrollToIndex({
+        index: displayList.length - 1,
+        animated: true,
+      });
+    },
+    [dayDividerIndices, displayList],
+  );
+
   useEffect(() => {
     return () => {
       if (hideLabelTimeoutRef.current)
@@ -338,6 +380,7 @@ export default function ChatDetailsScreen({
           ) : (
             <>
               <ChatMessageList
+                ref={listRef}
                 data={displayList}
                 messages={messages ?? []}
                 chatType={chatType}
@@ -358,6 +401,7 @@ export default function ChatDetailsScreen({
                 visible={labelVisible}
                 defaultOpacity={LABEL_DEFAULT_OPACITY}
                 visibleOpacity={LABEL_VISIBLE_OPACITY}
+                onPress={handleFloatingLabelPress}
               />
             </>
           )}

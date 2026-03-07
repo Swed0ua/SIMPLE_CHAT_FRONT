@@ -71,6 +71,7 @@ export function getChatDaySeparatorLabel(
 }
 
 export function getDayKey(isoDate: string): string {
+  if (isoDate == null || typeof isoDate !== 'string') return '';
   const d = new Date(isoDate);
   return format(d, 'yyyy-MM-dd');
 }
