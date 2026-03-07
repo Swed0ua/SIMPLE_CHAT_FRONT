@@ -52,21 +52,36 @@ export function buildDividerPositions(
   return positions;
 }
 
+export type FloatingDayResult = {
+  dateKey: string | null;
+  distanceToNearestDivider: number;
+};
+
 export function getFloatingDayKeyFromPositions(
   scrollY: number,
   positions: DividerPosition[],
   topOffsetPx: number = TOP_OFFSET_PX,
-): string | null {
-  if (positions.length === 0) return null;
-  let found: DividerPosition | null = null;
+): FloatingDayResult {
+  let dateKey: string | null = null;
+  let foundTopY = Infinity;
+  let distanceToNearestDivider = Infinity;
+
   for (let i = 0; i < positions.length; i++) {
     const p = positions[i];
-    if (
-      p.topY >= scrollY + topOffsetPx &&
-      (found === null || p.topY < found.topY)
-    ) {
-      found = p;
+    const d = p.topY - scrollY;
+
+    if (Math.abs(d) < Math.abs(distanceToNearestDivider)) {
+      distanceToNearestDivider = d;
+    }
+    if (p.topY >= scrollY + topOffsetPx && p.topY < foundTopY) {
+      foundTopY = p.topY;
+      dateKey = p.nextDateKey;
     }
   }
-  return found?.nextDateKey ?? null;
+
+  return {
+    dateKey,
+    distanceToNearestDivider:
+      distanceToNearestDivider === Infinity ? 0 : distanceToNearestDivider,
+  };
 }

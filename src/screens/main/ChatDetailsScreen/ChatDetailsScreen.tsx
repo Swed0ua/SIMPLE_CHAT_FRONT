@@ -40,6 +40,7 @@ type ChatDetailsScreenProps = NativeStackScreenProps<
 >;
 const EMPTY_INDICES: number[] = [];
 const LABEL_HIDE_DELAY_MS = 2000;
+const LABEL_NEAR_DIVIDER_THRESHOLD_PX = 50;
 const LABEL_DEFAULT_OPACITY = 0;
 const LABEL_VISIBLE_OPACITY = 1;
 
@@ -122,22 +123,26 @@ export default function ChatDetailsScreen({
 
   const handleScroll = useCallback(
     (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      console.log(
-        'e.nativeEvent.contentOffset.y',
-        contentHeight - e.nativeEvent.contentOffset.y,
-        contentHeight,
-        e.nativeEvent.contentOffset.y,
-      );
       const viewportTop =
         contentHeight - e.nativeEvent.contentOffset.y - listHeightRef.current;
-      const key = getFloatingDayKeyFromPositions(
-        Math.max(0, Math.min(contentHeight, viewportTop)),
-        dividerPositionsRef.current,
-      );
-      console.log('key', key);
-      setFloatingDayKey(prev => (prev === key ? prev : key));
-      // set date label visblity
-      showLabelAndScheduleHide();
+      const { dateKey, distanceToNearestDivider } =
+        getFloatingDayKeyFromPositions(
+          Math.max(0, Math.min(contentHeight, viewportTop)),
+          dividerPositionsRef.current,
+        );
+      setFloatingDayKey(prev => (prev === dateKey ? prev : dateKey));
+
+      if (
+        Math.abs(distanceToNearestDivider) >= LABEL_NEAR_DIVIDER_THRESHOLD_PX
+      ) {
+        showLabelAndScheduleHide();
+      } else {
+        setLabelVisible(false);
+        if (hideLabelTimeoutRef.current) {
+          clearTimeout(hideLabelTimeoutRef.current);
+          hideLabelTimeoutRef.current = null;
+        }
+      }
     },
     [contentHeight, showLabelAndScheduleHide],
   );
@@ -190,7 +195,7 @@ export default function ChatDetailsScreen({
           onContentSizeChange={handleContentSizeChange}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}
-          scrollEventThrottle={16}
+          scrollEventThrottle={50}
           onScroll={handleScroll}
           inverted={true}
           style={styles.listContainer}
@@ -266,7 +271,6 @@ export default function ChatDetailsScreen({
       dayDividerIndices,
       displayList,
     );
-    console.log('dividerPositionsRef', dividerPositionsRef.current);
   }, [itemHeights, contentHeight, dayDividerIndices, displayList]);
 
   return (
