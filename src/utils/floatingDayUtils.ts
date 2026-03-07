@@ -57,7 +57,58 @@ export type FloatingDayResult = {
   distanceToNearestDivider: number;
 };
 
+/**
+ * Returns current day key and signed distance to nearest divider.
+ * Uses binary search — O(log n). Positions must be sorted by topY descending.
+ */
 export function getFloatingDayKeyFromPositions(
+  scrollY: number,
+  positions: DividerPosition[],
+  topOffsetPx: number = TOP_OFFSET_PX,
+): FloatingDayResult {
+  if (positions.length === 0) {
+    return { dateKey: null, distanceToNearestDivider: 0 };
+  }
+
+  const threshold = scrollY + topOffsetPx;
+
+  // First index i where positions[i].topY < threshold (positions sorted descending)
+  let low = 0;
+  let high = positions.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (positions[mid].topY < threshold) high = mid;
+    else low = mid + 1;
+  }
+  const dateKey = low > 0 ? positions[low - 1].nextDateKey : null;
+
+  // First index i where positions[i].topY < scrollY (bracket scrollY for nearest)
+  low = 0;
+  high = positions.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (positions[mid].topY < scrollY) high = mid;
+    else low = mid + 1;
+  }
+  let distanceToNearestDivider: number;
+  if (low === 0) {
+    distanceToNearestDivider = positions[0].topY - scrollY;
+  } else if (low === positions.length) {
+    distanceToNearestDivider = positions[positions.length - 1].topY - scrollY;
+  } else {
+    const dAbove = positions[low - 1].topY - scrollY;
+    const dBelow = scrollY - positions[low].topY;
+    distanceToNearestDivider = dAbove <= dBelow ? dAbove : -dBelow;
+  }
+
+  return { dateKey, distanceToNearestDivider };
+}
+
+/**
+ * Same as getFloatingDayKeyFromPositions but with linear scan — O(n).
+ * Kept for reference; not used in app.
+ */
+export function getFloatingDayKeyFromPositionsOLD(
   scrollY: number,
   positions: DividerPosition[],
   topOffsetPx: number = TOP_OFFSET_PX,

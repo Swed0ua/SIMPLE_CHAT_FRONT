@@ -126,7 +126,7 @@ const ChatMessageList = memo(function ChatMessageList({
         index={index}
         messages={messages}
         chatType={chatType}
-        currentUserId={currentUserId}
+        currentUserId={'u1'}
         onLayout={onItemLayout}
       />
     ),
