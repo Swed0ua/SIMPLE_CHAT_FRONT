@@ -46,7 +46,8 @@ const TEXTS = [
 export const getMockMessages = (
   type: ChatType = ChatType.DIRECT,
 ): MockMessageItem[] => {
-  const length = 100;
+  const length = 500;
+  const date = new Date();
   return Array.from({ length }, (_, i) => {
     const index = i + 1;
     const isSystemMessage = index % 7 === 0;
@@ -63,11 +64,11 @@ export const getMockMessages = (
       senderId = a.includes(index) ? 'u2' : 'u1';
     }
     return {
-      id: `m${index}`,
+      id: `m${index}-${date.toISOString()}`,
       senderId: senderId,
       isSystemMessage: isSystemMessage ? true : false,
       text: isSystemMessage ? 'System message ' : TEXTS[index % TEXTS.length],
-      createdAt: new Date(now - (100 - index) * HOUR).toISOString(),
+      createdAt: new Date(now - (length - index) * HOUR).toISOString(),
       systemMessageData: isSystemMessage
         ? {
             type: 'AddedMember',

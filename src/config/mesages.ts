@@ -1,6 +1,6 @@
 export const MESSAGES_CONFIG = {
   initialLoadLimit: 100,
-  loadMoreLimit: 0,
+  loadMoreLimit: 40,
   scrollToBottomChatThreshold: 80,
   skeleton: {
     MESSAGE_GAP: 20,
