@@ -40,7 +40,9 @@ type ChatDetailsScreenProps = NativeStackScreenProps<
 >;
 const EMPTY_INDICES: number[] = [];
 const LABEL_HIDE_DELAY_MS = 2000;
-const LABEL_NEAR_DIVIDER_THRESHOLD_PX = 50;
+// Note: label position has offset in bottom of the screen 20px relative to the divider
+const LABEL_NEAR_DIVIDER_TOP_PX = 100;
+const LABEL_NEAR_DIVIDER_BOTTOM_PX = 10;
 const LABEL_DEFAULT_OPACITY = 0;
 const LABEL_VISIBLE_OPACITY = 1;
 
@@ -132,9 +134,13 @@ export default function ChatDetailsScreen({
         );
       setFloatingDayKey(prev => (prev === dateKey ? prev : dateKey));
 
-      if (
-        Math.abs(distanceToNearestDivider) >= LABEL_NEAR_DIVIDER_THRESHOLD_PX
-      ) {
+      const isNearDivider =
+        (distanceToNearestDivider > 0 &&
+          distanceToNearestDivider <= LABEL_NEAR_DIVIDER_TOP_PX) ||
+        (distanceToNearestDivider < 0 &&
+          distanceToNearestDivider >= -LABEL_NEAR_DIVIDER_BOTTOM_PX);
+
+      if (!isNearDivider) {
         showLabelAndScheduleHide();
       } else {
         setLabelVisible(false);
