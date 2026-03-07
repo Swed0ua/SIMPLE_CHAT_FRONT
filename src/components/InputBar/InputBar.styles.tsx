@@ -26,6 +26,9 @@ export const getStyles = ({
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: theme.colors.border.default,
     },
+    containerDisabled: {
+      opacity: 0.5,
+    },
     input: {
       flex: 1,
       minHeight: 40,

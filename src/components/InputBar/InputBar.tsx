@@ -37,7 +37,9 @@ export default function InputBar({
     onSubmit(trimmedText);
   }, [value, onSubmit, canSubmit]);
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[styles.container, style, disabled && styles.containerDisabled]}
+    >
       <TextInput
         key={value === '' ? 'empty' : 'filled'}
         value={value}

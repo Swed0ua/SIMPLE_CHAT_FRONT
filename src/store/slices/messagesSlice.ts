@@ -83,7 +83,7 @@ export const fetchMessagesByChatId = createAsyncThunk<
   'messages/fetchMessages',
   async ({ chatId, cursor = null, chatType = null }: FetchMessagesPayload) => {
     console.log('fetchMessagesByChatId : ', chatId);
-    await new Promise<void>(resolve => setTimeout(resolve, 500));
+    await new Promise<void>(resolve => setTimeout(resolve, 5000));
     const messagesMock = getMockMessages(chatType ?? ChatType.DIRECT);
     if (!cursor) {
       return messagesMock
