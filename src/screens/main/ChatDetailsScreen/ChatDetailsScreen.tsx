@@ -57,6 +57,7 @@ type ChatMessageListRowProps = {
   item: Message;
   index: number;
   messages: Message[];
+  allMessages: Message[];
   chatType: ChatType;
   currentUserId: string | undefined;
   onLayout: (index: number, height: number) => void;
@@ -66,6 +67,7 @@ const ChatMessageListRow = memo(function ChatMessageListRow({
   item,
   index,
   messages,
+  allMessages,
   chatType,
   currentUserId,
   onLayout,
@@ -85,7 +87,7 @@ const ChatMessageListRow = memo(function ChatMessageListRow({
       <ChatMessageRow
         message={item}
         index={index}
-        messages={messages}
+        messages={allMessages}
         chatType={chatType}
         currentUserId={currentUserId}
       />
@@ -145,12 +147,13 @@ const ChatMessageList = memo(
           item={item}
           index={index}
           messages={messages}
+          allMessages={data}
           chatType={chatType}
           currentUserId={currentUserId}
           onLayout={onItemLayout}
         />
       ),
-      [messages, chatType, currentUserId, onItemLayout],
+      [messages, data, chatType, currentUserId, onItemLayout],
     );
     const keyExtractor = useCallback((item: Message) => item.id, []);
     return (
@@ -384,7 +387,7 @@ export default function ChatDetailsScreen({
                 data={displayList}
                 messages={messages ?? []}
                 chatType={chatType}
-                currentUserId={currentUserId}
+                currentUserId={'u1'}
                 listContainerStyle={styles.listContainer}
                 listFooter={listFooter}
                 listHeader={listHeader}

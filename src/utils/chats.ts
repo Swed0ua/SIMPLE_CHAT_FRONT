@@ -15,11 +15,16 @@ export const getIsInMessagesGroup = (
 
   if (
     index < list.length - 1 &&
+    !list[index + 1]?.isSystemMessage &&
     current.senderId === list[index + 1]?.senderId
   ) {
     inMessagesGroup.isFirst = false;
   }
-  if (index > 0 && current.senderId === list[index - 1]?.senderId) {
+  if (
+    index > 0 &&
+    !list[index - 1]?.isSystemMessage &&
+    current.senderId === list[index - 1]?.senderId
+  ) {
     inMessagesGroup.isLast = false;
   }
   return inMessagesGroup;
