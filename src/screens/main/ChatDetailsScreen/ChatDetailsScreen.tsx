@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Pressable,
   Text,
+  Animated,
 } from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
@@ -235,6 +236,16 @@ export default function ChatDetailsScreen({
     null,
   );
   const listRef = useRef<ChatMessageListRef>(null);
+  const lastScrollYRef = useRef(0);
+
+  const scrollToBottomAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(scrollToBottomAnim, {
+      toValue: showScrollToBottom ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [showScrollToBottom]);
 
   const draft = useAppSelector(s => s.messages.draftByChatId[chatId]);
   const sending = useAppSelector(s => s.messages.sendingByChatId[chatId]);
@@ -285,9 +296,16 @@ export default function ChatDetailsScreen({
   const handleScroll = useCallback(
     (e: { nativeEvent: { contentOffset: { y: number } } }) => {
       const scrollY = e.nativeEvent.contentOffset.y;
-      setShowScrollToBottom(
-        scrollY > MESSAGES_CONFIG.scrollToBottomChatThreshold,
-      );
+      const prevScrollY = lastScrollYRef.current;
+      lastScrollYRef.current = scrollY;
+      const threshold = MESSAGES_CONFIG.scrollToBottomChatThreshold;
+      if (scrollY <= threshold) {
+        setShowScrollToBottom(false);
+      } else if (scrollY < prevScrollY) {
+        setShowScrollToBottom(true);
+      } else if (scrollY > prevScrollY) {
+        setShowScrollToBottom(false);
+      }
       const viewportTop = contentHeight - scrollY - listHeightRef.current;
       const { dateKey, distanceToNearestDivider } =
         getFloatingDayKeyFromPositions(
@@ -433,14 +451,20 @@ export default function ChatDetailsScreen({
                 visibleOpacity={LABEL_VISIBLE_OPACITY}
                 onPress={handleFloatingLabelPress}
               />
-              {showScrollToBottom && (
+
+              <Animated.View
+                style={[
+                  styles.scrollToBottomContainer,
+                  { opacity: scrollToBottomAnim },
+                ]}
+              >
                 <Pressable
                   style={styles.scrollToBottomButton}
                   onPress={handleScrollToBottom}
                 >
                   <Text style={styles.scrollToBottomButtonText}>↓</Text>
                 </Pressable>
-              )}
+              </Animated.View>
             </>
           )}
           <StickyInputFooter bottomInset={insets.bottom}>

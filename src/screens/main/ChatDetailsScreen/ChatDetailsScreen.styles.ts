@@ -24,16 +24,24 @@ export const getStyles = ({
     listBottomContainer: {
       paddingBottom: spacing.lg,
     },
-    scrollToBottomButton: {
+    scrollToBottomContainer: {
       position: 'absolute',
       bottom: spacing.md + 100 + differenceKeyboardHeight,
       right: spacing.sm + (insets.right ?? 0),
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.colors.primary[500],
+      zIndex: 1000,
+    },
+    scrollToBottomButton: {
+      width: 50,
+      height: 50,
+      borderRadius: 50,
+      backgroundColor: theme.colors.primary[800],
       justifyContent: 'center',
       alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
     },
     scrollToBottomButtonText: {
       color: theme.colors.text.inverse,
