@@ -9,6 +9,8 @@ export interface Chat {
   lastMessage?: string | null;
   lastMessageId?: string | null;
   lastMessageAt?: string | null;
+  lastReadMessageId?: string | null;
+  unreadCount?: number;
   avatarUrl?: string;
   createdAt: string;
   createdById?: string | null;
@@ -34,6 +36,8 @@ const mockChats: Chat[] = [
       'Hey, \n how are you? And you / i am okay/ Heh today is good day',
     lastMessageId: 'msg-1',
     lastMessageAt: now.toISOString(),
+    lastReadMessageId: null,
+    unreadCount: 19,
     createdAt: new Date(now.getTime() - 86400000).toISOString(),
     createdById: 'user-2',
   },
@@ -44,6 +48,8 @@ const mockChats: Chat[] = [
     lastMessage: 'See you tomorrow',
     lastMessageId: 'msg-2',
     lastMessageAt: new Date(now.getTime() - 131600000).toISOString(),
+    lastReadMessageId: 'msg-2',
+    unreadCount: 0,
     createdAt: new Date(now.getTime() - 1072800000).toISOString(),
     createdById: 'user-3',
   },
@@ -54,6 +60,8 @@ const mockChats: Chat[] = [
     lastMessage: 'PR approved',
     lastMessageId: 'msg-3',
     lastMessageAt: new Date(now.getTime() - 7200000).toISOString(),
+    lastReadMessageId: null,
+    unreadCount: 3,
     createdAt: new Date(now.getTime() - 259200000).toISOString(),
     createdById: 'user-1',
   },
@@ -70,7 +78,7 @@ export const fetchChats = createAsyncThunk<
   Chat[],
   void,
   { state: RootState; rejectValue: string }
->('chat/fetchChats', async (_, { rejectWithValue }) => {
+>('chat/fetchChats', async (_, { rejectWithValue: _rejectWithValue }) => {
   await new Promise<void>(resolve => setTimeout(resolve, 1000));
   return mockChats;
 });

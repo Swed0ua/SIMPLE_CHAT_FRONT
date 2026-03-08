@@ -87,7 +87,9 @@ function ChatItem({ chatItem, onPress, draft }: ChatItemProps) {
             </Text>
           </View>
           <View style={styles.contentTextRightContentWrapper}>
-            <Badge value={19} />
+            {(chatItem.unreadCount ?? 0) > 0 && (
+              <Badge value={chatItem.unreadCount ?? 0} />
+            )}
           </View>
         </View>
       </View>
