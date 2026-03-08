@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, TextInput, TextStyle, View, ViewStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from './InputBar.styles';
@@ -29,6 +29,14 @@ export default function InputBar({
   const { theme } = useTheme();
   const inset = useSafeAreaInsets();
   const styles = getStyles({ theme, insets: inset });
+  const prevValueRef = useRef(value);
+  const [resetKey, setResetKey] = useState(0);
+  useEffect(() => {
+    if (value === '' && prevValueRef.current !== '') {
+      setResetKey(k => k + 1);
+    }
+    prevValueRef.current = value;
+  }, [value]);
   const canSubmit = !disabled && value && value.trim().length > 0;
   const handleSubmit = useCallback(() => {
     if (!value || !canSubmit) return;
@@ -41,7 +49,7 @@ export default function InputBar({
       style={[styles.container, style, disabled && styles.containerDisabled]}
     >
       <TextInput
-        key={value === '' ? 'empty' : 'filled'}
+        key={resetKey}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
