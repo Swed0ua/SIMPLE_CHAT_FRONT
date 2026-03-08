@@ -179,6 +179,11 @@ const ChatMessageList = memo(
       >
         <FlatList
           ref={flatListRef}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold:
+              MESSAGES_CONFIG.scrollToBottomChatThreshold,
+          }}
           data={data}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
