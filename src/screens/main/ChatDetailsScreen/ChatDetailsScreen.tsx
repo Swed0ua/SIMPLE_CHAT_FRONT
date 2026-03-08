@@ -1,5 +1,11 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { View, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  Pressable,
+  Text,
+} from 'react-native';
 import { MainStackParamList } from '../../../types/navigation';
 import { ROUTES } from '../../../navigation/routesConfig';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
@@ -38,6 +44,8 @@ import {
   DividerPosition,
   getFloatingDayKeyFromPositions,
 } from '../../../utils/floatingDayUtils';
+import { MESSAGES_CONFIG } from '../../../config/mesages';
+import { useKeyboardHeight } from '../../../hooks/useKeyboardHeight';
 
 type ChatDetailsScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -66,7 +74,7 @@ type ChatMessageListRowProps = {
 const ChatMessageListRow = memo(function ChatMessageListRow({
   item,
   index,
-  messages,
+  messages: _messages,
   allMessages,
   chatType,
   currentUserId,
@@ -97,6 +105,7 @@ const ChatMessageListRow = memo(function ChatMessageListRow({
 
 export type ChatMessageListRef = {
   scrollToIndex: (params: { index: number; animated?: boolean }) => void;
+  scrollToBottom: (params?: { animated?: boolean }) => void;
 };
 
 type ChatMessageListProps = {
@@ -138,6 +147,12 @@ const ChatMessageList = memo(
         flatListRef.current?.scrollToIndex({
           ...params,
           viewPosition: 1,
+        });
+      },
+      scrollToBottom: params => {
+        flatListRef.current?.scrollToOffset({
+          offset: 0,
+          animated: params?.animated ?? true,
         });
       },
     }));
@@ -191,7 +206,11 @@ export default function ChatDetailsScreen({
   const styleTheme = useTheme();
   const { theme } = styleTheme;
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => getStyles({ theme, insets }), [theme, insets]);
+  const keyboardHeight = useKeyboardHeight();
+  const styles = useMemo(
+    () => getStyles({ theme, insets, keyboardHeight }),
+    [theme, insets, keyboardHeight],
+  );
 
   const chatType =
     useAppSelector(s => s.chat.list.find(c => c.id === chatId)?.type) ??
@@ -211,6 +230,7 @@ export default function ChatDetailsScreen({
   const listHeightRef = useRef(0);
   const [floatingDayKey, setFloatingDayKey] = useState<string | null>(null);
   const [labelVisible, setLabelVisible] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const hideLabelTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -264,8 +284,11 @@ export default function ChatDetailsScreen({
 
   const handleScroll = useCallback(
     (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      const viewportTop =
-        contentHeight - e.nativeEvent.contentOffset.y - listHeightRef.current;
+      const scrollY = e.nativeEvent.contentOffset.y;
+      setShowScrollToBottom(
+        scrollY > MESSAGES_CONFIG.scrollToBottomChatThreshold,
+      );
+      const viewportTop = contentHeight - scrollY - listHeightRef.current;
       const { dateKey, distanceToNearestDivider } =
         getFloatingDayKeyFromPositions(
           Math.max(0, Math.min(contentHeight, viewportTop)),
@@ -291,6 +314,10 @@ export default function ChatDetailsScreen({
     },
     [contentHeight, showLabelAndScheduleHide],
   );
+
+  const handleScrollToBottom = useCallback(() => {
+    listRef.current?.scrollToBottom({ animated: true });
+  }, []);
 
   const handleItemLayout = useCallback((index: number, height: number) => {
     if (itemHeightsRef.current[index] === height) return;
@@ -406,6 +433,14 @@ export default function ChatDetailsScreen({
                 visibleOpacity={LABEL_VISIBLE_OPACITY}
                 onPress={handleFloatingLabelPress}
               />
+              {showScrollToBottom && (
+                <Pressable
+                  style={styles.scrollToBottomButton}
+                  onPress={handleScrollToBottom}
+                >
+                  <Text style={styles.scrollToBottomButtonText}>↓</Text>
+                </Pressable>
+              )}
             </>
           )}
           <StickyInputFooter bottomInset={insets.bottom}>
